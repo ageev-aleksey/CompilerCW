@@ -25,6 +25,26 @@
 		return 1;
 	}
 
+	int create_op_node(std::string value, std::string op, int v1, int v2) {
+
+                auto node = root.addNodeInBack(value);
+                auto op_node = root.addNodeInBack(op);
+                root.addLink(node, root.getNodeByIndex(v1), Empty{});
+                root.addLink(node, op_node, Empty{});
+                root.addLink(node, root.getNodeByIndex(v2), Empty{});
+         	return node.getIndex();
+
+	}
+
+	int create_unar_op_node(std::string value, std::string op, int v)
+	{
+            auto node = root.addNodeInBack(value);
+            auto unar_node = root.addNodeInBack(op);
+            root.addLink(node, unar_node, Empty{});
+            root.addLink(node, root.getNodeByIndex(v), Empty{});
+            return node.getIndex();
+       	}
+
 	int createNode(std::string value, std::vector<int> children_index) {
 		auto node = root.addNodeInBack(value);
 		for(auto ptr = children_index.begin(); ptr != children_index.end(); ++ptr) {
@@ -34,7 +54,7 @@
 	}
 
 
-	createLink(int index1, int index2) {
+	void createLink(int index1, int index2) {
 		root.addLink(root.getNodeByIndex(index1), root.getNodeByIndex(index2), Empty{});
 	}
 
@@ -44,13 +64,14 @@
             	yyin = fopen("flex_input.php", "r");
 		yyparse();
 		std::cout << "end!" << std::endl;
-		saveImageGV(graphToDOT(root), "graph");
+		saveImageGV(toDotByDepthStep(root), "graph");
 		return 0;
 	}
 %}
 
 %token  BREAK CLONE ENDSWITCH HTML WHILE DO FOR FOREACH VARNAME AS SV RETURN INTCONST CHARCONST PAS DIVAS MODAS EQ NE TEQ TNE LEQ GEQ AND OR PP MM UPLUS UMINUS ARRAY ID ARROW NEW PARENT DCOL IF ELSE ELSEIF SWITCH DEFAULT CASE FUNCTION CLASS EXTENDS VAR PUBLIC PRIVATE PROTECTED ECHO_KW MAS MULAS UNDEFINED
 
+%right '='
 %left '(' ')'
 %left '+' '-'
 %left '*' '/'
@@ -123,21 +144,22 @@ stmt_list   : stmt
 
 stmt_list_e :  /*empty*/
 	    {
-	    	$$ = createNode("stmt_list", {});
+	    	$$ = createNode("stmt_list_e", {});
 	    	auto empty = root.addNodeInBack("empty");
 	    	root.addLink(root.getNodeByIndex($$), empty, Empty{});
 	    }
             | stmt_list
             {
-            	$$ = createNode("stmt_list", {$1});
+            	$$ = createNode("stmt_list_e", {$1});
             }
             ;
             
 lost_close_par  : ')'	%prec ')'
 		{
-			$$ = createNode("lost_close_par", {});
+			auto node = root.addNodeInBack("lost_close_par");
 			auto braket_node = root.addNodeInBack(")");
-			root.addLink(root.getNodeByIndex($$), braket_node, Empty{});
+			root.addLink(node, braket_node, Empty{});
+			$$ = node.getIndex();
 		}
                 | error %prec ')'
                 {
@@ -146,9 +168,10 @@ lost_close_par  : ')'	%prec ')'
                 ;
 lost_open_par  : '('	%prec '('
 		{
-			$$ = createNode("lost_close_par", {});
+			auto node = root.addNodeInBack("lost_open_par");
 			auto braket_node = root.addNodeInBack("(");
-			root.addLink(root.getNodeByIndex($$), braket_node, Empty{});
+			root.addLink(node, braket_node, Empty{});
+			$$ = node.getIndex();
 		}
                 | error %prec '('
                 {
@@ -157,9 +180,11 @@ lost_open_par  : '('	%prec '('
                 ;
 stmt    : expr_e ';'
 	{
-		$$ = createNode("stmt", {$1});
-		auto braket_node = root.addNodeInBack(";");
-		root.addLink(root.getNodeByIndex($$), braket_node, Empty{});
+		auto node = root.addNodeInBack("stmt");
+		auto semicolon_node = root.addNodeInBack(";");
+		root.addLink(node, root.getNodeByIndex($1), Empty{});
+		root.addLink(node, semicolon_node, Empty{});
+		$$ = node.getIndex();
 	}
         | if_stmt
         {
@@ -209,24 +234,88 @@ stmt    : expr_e ';'
 		auto semicolon_node2 = root.addNodeInBack(";");
 		root.addLink(node, for_node, Empty{});
 		root.addLink(node, root.getNodeByIndex($2), Empty{});
-		root.addLink(node, root.getNodeByIndex($3). Empty{});
+		root.addLink(node, root.getNodeByIndex($3), Empty{});
 		root.addLink(node, semicolon_node1, Empty{});
-		root.addLink(node, $5, Empty{});
+		root.addLink(node, root.getNodeByIndex($5), Empty{});
 		root.addLink(node, semicolon_node2, Empty{});
 		root.addLink(node, root.getNodeByIndex($7), Empty{});
 		root.addLink(node, root.getNodeByIndex($8), Empty{});
 		root.addLink(node, root.getNodeByIndex($9), Empty{});
+		$$ = node.getIndex();
         }
         | FOREACH lost_open_par expr AS VARNAME lost_close_par stmt
         {
-        	auto foreach_node = root.addNodeInFront("FOREACH");
-
+        	auto node = root.addNodeInBack("stmt");
+        	auto foreach_node = root.addNodeInBack("FOREACH");
+        	auto as_node = root.addNodeInBack("AS");
+        	auto varname_node = root.addNodeInBack("VARNAME");
+        	root.addLink(node, foreach_node, Empty{});
+        	root.addLink(node, root.getNodeByIndex($2), Empty{});
+        	root.addLink(node, root.getNodeByIndex($3), Empty{});
+        	root.addLink(node, as_node, Empty{});
+        	root.addLink(node, varname_node, Empty{});
+        	root.addLink(node, root.getNodeByIndex($6), Empty{});
+        	root.addLink(node, root.getNodeByIndex($7), Empty{});
+        	$$ = node.getIndex();
         }
         | FOREACH lost_open_par expr AS VARNAME SV VARNAME lost_close_par stmt
+        {
+        	auto node = root.addNodeInBack("stmt");
+                auto foreach_node = root.addNodeInBack("FOREACH");
+                auto as_node = root.addNodeInBack("AS");
+                auto varname_node1 = root.addNodeInBack("VARNAME");
+                auto sv_node = root.addNodeInBack("SV");
+                auto varname_node2 = root.addNodeInBack("VARNAME");
+                root.addLink(node, foreach_node, Empty{});
+                root.addLink(node, root.getNodeByIndex($2), Empty{});
+                root.addLink(node, root.getNodeByIndex($3), Empty{});
+                root.addLink(node, as_node, Empty{});
+                root.addLink(node, varname_node1, Empty{});
+                root.addLink(node, sv_node, Empty{});
+                root.addLink(node, varname_node2, Empty{});
+                root.addLink(node, root.getNodeByIndex($8), Empty{});
+                root.addLink(node, root.getNodeByIndex($9), Empty{});
+                $$ = node.getIndex();
+        }
+
         | ECHO_KW expr ';'
+        {
+        	auto node = root.addNodeInBack("stmt");
+        	auto echo_node = root.addNodeInBack("ECHO_KW");
+        	auto semicolon_node = root.addNodeInBack(";");
+        	root.addLink(node, echo_node, Empty{});
+        	root.addLink(node, root.getNodeByIndex($2), Empty{});
+        	root.addLink(node, semicolon_node, Empty{});
+        	$$ = node.getIndex();
+        }
         | BREAK ';'
+        {
+        	auto node = root.addNodeInBack("stmt");
+        	auto break_node = root.addNodeInBack("BREAK");
+        	auto semicolon_node = root.addNodeInBack(";");
+        	root.addLink(node, break_node, Empty{});
+        	root.addLink(node, semicolon_node, Empty{});
+        	$$ = node.getIndex();
+        }
         | RETURN expr_e ';'
+        {
+        	auto node = root.addNodeInBack("stmt");
+        	auto return_node = root.addNodeInBack("RETURN");
+        	auto semicolon_node = root.addNodeInBack(";");
+        	root.addLink(node, return_node, Empty{});
+        	root.addLink(node, semicolon_node, Empty{});
+        	$$ = node.getIndex();
+        }
         | '{' stmt_list_e '}'
+        {
+        	auto node = root.addNodeInBack("stmt");
+        	auto openbreaket_node = root.addNodeInBack("{");
+        	auto closebreaket_node = root.addNodeInBack("}");
+        	root.addLink(node, openbreaket_node, Empty{});
+        	root.addLink(node, root.getNodeByIndex($2), Empty{});
+        	root.addLink(node, closebreaket_node, Empty{});
+        	$$ = node.getIndex();
+        }
         ; 
  
 expr    : VARNAME
@@ -244,75 +333,381 @@ expr    : VARNAME
         	$$ = node.getIndex();
         }
         | CHARCONST
+        {
+        	auto node = root.addNodeInBack("expr");
+        	auto charconst_node = root.addNodeInBack("CHARCONST");
+        	root.addLink(node, charconst_node, Empty{});
+        	$$ = node.getIndex();
+        }
         | expr '[' expr ']'
+        {
+        	auto node = root.addNodeInBack("expr");
+        	auto openbreaket_node = root.addNodeInBack("[");
+        	auto closebreaket_node = root.addNodeInBack("]");
+        	root.addLink(node, root.getNodeByIndex($1), Empty{});
+        	root.addLink(node, openbreaket_node, Empty{});
+        	root.addLink(node, root.getNodeByIndex($3), Empty{});
+        	root.addLink(node, closebreaket_node, Empty{});
+        	$$ = node.getIndex();
+        }
         | expr '.' expr
+        {
+        	$$ = create_op_node("expr", ".", $1, $3);
+        }
         | expr '+' expr
+        {
+        	$$ = create_op_node("expr", "+", $1, $3);
+        }
         | expr PAS expr
+        {
+        	$$ = create_op_node("expr", "PAS", $1, $3);
+        }
         | expr '-' expr
+        {
+        	$$ = create_op_node("expr", "-", $1, $3);
+        }
         | expr MAS expr
+        {
+        	$$ = create_op_node("expr", "MAS", $1, $3);
+        }
         | expr '*' expr
+        {
+        	$$ = create_op_node("expr", "*", $1, $3);
+        }
         | expr MULAS expr
+        {
+        	$$ = create_op_node("expr", "MULAS", $1, $3);
+        }
         | expr '/' expr
+        {
+        	$$ = create_op_node("expr", "/", $1, $3);
+        }
         | expr DIVAS expr
+        {
+        	$$ = create_op_node("expr", "DIVAS", $1, $3);
+        }
         | expr '%' expr
+        {
+        	$$ = create_op_node("expr", "%", $1, $3);
+        }
         | expr MODAS expr
         | expr '=' expr
         {
-        	$$ = createNode("expr", {$1, $3});
-        	auto assignment_node = root.addNodeInBack("=");
-        	root.addLink(root.getNodeByIndex($$), assignment_node, Empty{});
+        	$$ = create_op_node("expr", "=", $1, $3);
         }
         | expr EQ expr
+        {
+        	$$ = create_op_node("expr", "==", $1, $3);
+        }
         | expr NE expr
+         {
+         	$$ = create_op_node("expr", "!=", $1, $3);
+         }
         | expr TEQ expr
+        {
+        	$$ = create_op_node("expr", "TEQ", $1, $3);
+        }
         | expr TNE expr
+         {
+         	$$ = create_op_node("expr", "TNE", $1, $3);
+         }
         | expr '<' expr
+        {
+        	$$ = create_op_node("expr", "<", $1, $3);
+        }
         | expr LEQ expr
+        {
+        	$$ = create_op_node("expr", "<=", $1, $3);
+        }
         | expr '>' expr
+        {
+        	$$ = create_op_node("expr", ">", $1, $3);
+        }
         | expr GEQ expr
+        {
+        	$$ = create_op_node("expr", ">=", $1, $3);
+        }
         | expr AND expr
+        {
+        	$$ = create_op_node("expr", "&&", $1, $3);
+        }
         | expr OR expr
+        {
+        	$$ = create_op_node("expr", "||", $1, $3);
+        }
         | '!' expr
+        {
+        	$$ = create_unar_op_node("expr", "!", $2);
+        }
         | PP expr
+        {
+		$$ = create_unar_op_node("expr", "PP", $2);
+	}
         | MM expr
+        {
+		$$ = create_unar_op_node("expr", "MM", $2);
+	}
         | expr PP
+        {
+        	auto node = root.addNodeInBack("expr");
+        	auto unar_node = root.addNodeInBack("PP");
+        	root.addLink(node, root.getNodeByIndex($2), Empty{});
+        	root.addLink(node, unar_node, Empty{});
+        	$$ = node.getIndex();
+	}
         | expr MM
+        {
+        	auto node = root.addNodeInBack("expr");
+        	auto unar_node = root.addNodeInBack("MM");
+        	root.addLink(node, root.getNodeByIndex($2), Empty{});
+        	root.addLink(node, unar_node, Empty{});
+        	$$ = node.getIndex();
+	}
         | '+' expr %prec UPLUS
+        {
+        	$$ = create_unar_op_node("expr", "UNAR +", $2);
+        }
         | '-' expr %prec UMINUS
+        {
+        	$$ = create_unar_op_node("expr", "UNAR -", $2);
+        }
         | lost_open_par expr lost_close_par
+        {
+        	auto node = root.addNodeInBack("expr");
+        	root.addLink(node, root.getNodeByIndex($1), Empty{});
+        	root.addLink(node, root.getNodeByIndex($2), Empty{});
+        	root.addLink(node, root.getNodeByIndex($3), Empty{});
+        	$$ = node.getIndex();
+        }
         | ARRAY lost_open_par array_members_list_e lost_close_par
+        {
+        	auto node = root.addNodeInBack("expr");
+        	auto array_node = root.addNodeInBack("ARRAY");
+        	root.addLink(node, array_node, Empty{});
+        	root.addLink(node, root.getNodeByIndex($2), Empty{});
+        	root.addLink(node, root.getNodeByIndex($3), Empty{});
+        	root.addLink(node, root.getNodeByIndex($4), Empty{});
+        	$$ = node.getIndex();
+        }
         | ID lost_open_par expr_list_e lost_close_par
+        {
+        	auto node = root.addNodeInBack("expr");
+        	auto id_node = root.addNodeInBack("ID");
+        	root.addLink(node, id_node, Empty{});
+        	root.addLink(node, root.getNodeByIndex($2), Empty{});
+        	root.addLink(node, root.getNodeByIndex($3), Empty{});
+        	root.addLink(node, id_node, Empty{});
+                root.addLink(node, root.getNodeByIndex($2), Empty{});
+               	root.addLink(node, root.getNodeByIndex($3), Empty{});
+               	root.addLink(node, root.getNodeByIndex($4), Empty{});
+               	$$ = node.getIndex();
+
+        }
         | expr ARROW ID
+        {
+        	auto node = root.addNodeInBack("expr");
+        	auto arrow_node = root.addNodeInBack("ARROW");
+        	auto id_node = root.addNodeInBack("ID");
+        	root.addLink(node, root.getNodeByIndex($1), Empty{});
+        	root.addLink(node, arrow_node, Empty{});
+        	root.addLink(node, id_node, Empty{});
+        	$$ = node.getIndex();
+        }
         | expr ARROW ID lost_open_par expr_list_e lost_close_par
+        {
+               	auto node = root.addNodeInBack("expr");
+               	auto arrow_node = root.addNodeInBack("ARROW");
+                auto id_node = root.addNodeInBack("ID");
+                root.addLink(node, root.getNodeByIndex($1), Empty{});
+                root.addLink(node, arrow_node, Empty{});
+                root.addLink(node, root.getNodeByIndex($4), Empty{});
+                root.addLink(node, root.getNodeByIndex($5), Empty{});
+                root.addLink(node, root.getNodeByIndex($6), Empty{});
+                $$ = node.getIndex();
+        }
         | expr ARROW VARNAME
+        {
+        	auto node = root.addNodeInBack("expr");
+        	auto arrow_node = root.addNodeInBack("ARROW");
+        	auto varname_node = root.addNodeInBack("VARNAME");
+        	root.addLink(node, root.getNodeByIndex($1), Empty{});
+        	root.addLink(node, arrow_node, Empty{});
+        	root.addLink(node, varname_node, Empty{});
+        	$$ = node.getIndex();
+        }
         | expr ARROW VARNAME lost_open_par expr_list_e lost_close_par
+        {
+        	auto node = root.addNodeInBack("expr");
+                auto arrow_node = root.addNodeInBack("ARROW");
+                auto varname_node = root.addNodeInBack("VARNAME");
+                root.addLink(node, root.getNodeByIndex($1), Empty{});
+                root.addLink(node, arrow_node, Empty{});
+                root.addLink(node, varname_node, Empty{});
+                root.addLink(node, root.getNodeByIndex($4), Empty{});
+                root.addLink(node, root.getNodeByIndex($5), Empty{});
+                root.addLink(node, root.getNodeByIndex($6), Empty{});
+                $$ = node.getIndex();
+        }
         | NEW ID
+        {
+        	auto node = root.addNodeInBack("expr");
+        	auto new_node = root.addNodeInBack("NEW");
+        	auto id_node = root.addNodeInBack("ID");
+        	root.addLink(node, new_node, Empty{});
+        	root.addLink(node, id_node, Empty{});
+        	$$ = node.getIndex();
+        }
         | NEW ID lost_open_par expr_list_e lost_close_par
-        | NEW VARNAME 
+        {
+        	auto node = root.addNodeInBack("expr");
+        	auto new_node = root.addNodeInBack("NEW");
+        	auto id_node = root.addNodeInBack("ID");
+        	root.addLink(node, new_node, Empty{});
+        	root.addLink(node, id_node, Empty{});
+        	root.addLink(node, root.getNodeByIndex($3), Empty{});
+        	root.addLink(node, root.getNodeByIndex($4), Empty{});
+        	root.addLink(node, root.getNodeByIndex($5), Empty{});
+        	$$ = node.getIndex();
+        }
+        | NEW VARNAME
+        {
+        	auto node = root.addNodeInBack("expr");
+        	auto new_node = root.addNodeInBack("NEW");
+        	auto varname_node = root.addNodeInBack("VARNAME");
+        	root.addLink(node, new_node, Empty{});
+        	root.addLink(node, varname_node, Empty{});
+        	$$ = node.getIndex();
+        }
         | NEW VARNAME lost_open_par expr_list_e lost_close_par
+        {
+        	auto node = root.addNodeInBack("expr");
+        	auto new_node = root.addNodeInBack("NEW");
+        	auto varname_node = root.addNodeInBack("VARNAME");
+        	root.addLink(node, new_node, Empty{});
+        	root.addLink(node, varname_node, Empty{});
+        	root.addLink(node, root.getNodeByIndex($3), Empty{});
+        	root.addLink(node, root.getNodeByIndex($4), Empty{});
+        	root.addLink(node, root.getNodeByIndex($5), Empty{});
+        	$$ = node.getIndex();
+        }
         | PARENT DCOL ID lost_open_par expr_list_e lost_close_par
+        {
+        	auto node = root.addNodeInBack("expr");
+        	auto parent_node = root.addNodeInBack("PARENT");
+        	auto dcol_node = root.addNodeInBack("DCOL");
+        	auto id_node = root.addNodeInBack("ID");
+        	root.addLink(node, parent_node, Empty{});
+        	root.addLink(node, dcol_node, Empty{});
+        	root.addLink(node, id_node, Empty{});
+        	root.addLink(node, root.getNodeByIndex($4), Empty{});
+        	root.addLink(node, root.getNodeByIndex($5), Empty{});
+        	root.addLink(node, root.getNodeByIndex($6), Empty{});
+        	$$ = node.getIndex();
+        }
         ;
 			
 expr_e   :  /*empty*/
+	{
+		auto node = root.addNodeInBack("expr_e");
+		auto empty = root.addNodeInBack("empty");
+		root.addLink(node, empty, Empty{});
+		$$ = node.getIndex();
+	}
          | expr
+         {
+         	auto node = root.addNodeInBack("expr_e");
+         	root.addLink(node, root.getNodeByIndex($1), Empty{});
+         	$$ = node.getIndex();
+         }
          ;
 
-expr_list   : expr 
+expr_list   : expr
+	   {
+		auto node = root.addNodeInBack("expr_list");
+		root.addLink(node, root.getNodeByIndex($1), Empty{});
+		$$ = node.getIndex();
+           }
             | expr_list ',' expr
+            {
+            	auto node = root.addNodeInBack("expr_list");
+            	auto dot_node = root.addNodeInBack(",");
+            	root.addLink(node, root.getNodeByIndex($1), Empty{});
+            	root.addLink(node, dot_node, Empty{});
+            	root.addLink(node, root.getNodeByIndex($3), Empty{});
+            	$$ = node.getIndex();
+            }
             ; 
             
 expr_list_e :  /*empty*/
+	   {
+	   	auto node = root.addNodeInBack("expr_list");
+	   	auto empty = root.addNodeInBack("empty");
+	   	root.addLink(node, empty, Empty{});
+	   	$$ = node.getIndex();
+	   }
             | expr_list
+            {
+            	auto node = root.addNodeInBack("expr_list");
+            	root.addLink(node, root.getNodeByIndex($1), Empty{});
+            	$$ = node.getIndex();
+            }
             ;
 
 var_list_e  :  /*empty*/
+	   {
+	   	auto node = root.addNodeInBack("var_list_e");
+	   	auto empty = root.addNodeInBack("empty");
+	   	root.addLink(node, empty, Empty{});
+	   	$$ = node.getIndex();
+	   }
             | var_list
+            {
+            	auto node = root.addNodeInBack("var_list_e");
+            	root.addLink(node, root.getNodeByIndex($1), Empty{});
+            	$$ = node.getIndex();
+            }
             ;
 
 var_list    : VARNAME
-			| VARNAME '=' expr
+	    {
+	    	auto node = root.addNodeInBack("var_list");
+	    	auto varname_node = root.addNodeInBack("VARNAME");
+	    	root.addLink(node, varname_node, Empty{});
+	    	$$ = node.getIndex();
+	    }
+	    | VARNAME '=' expr
+	    {
+	    	auto node = root.addNodeInBack("var_list");
+	    	auto varname_node = root.addNodeInBack("VARNAME");
+	    	auto assignment_node = root.addNodeInBack("=");
+	    	root.addLink(node, varname_node, Empty{});
+	    	root.addLink(node, assignment_node, Empty{});
+	    	root.addLink(node, root.getNodeByIndex($3), Empty{});
+	    	$$ = node.getIndex();
+	    }
             | var_list ',' VARNAME
+	    {
+	    	auto node = root.addNodeInBack("var_list");
+	    	auto comma_node = root.addNodeInBack(",");
+	    	auto varname_node = root.addNodeInBack("VARNAME");
+	    	root.addLink(node, root.getNodeByIndex($1), Empty{});
+	    	root.addLink(node, comma_node, Empty{});
+	    	root.addLink(node, varname_node, Empty{});
+	    	$$ = node.getIndex();
+	    }
             | var_list ',' VARNAME '=' expr
+	    {
+	    	auto node = root.addNodeInBack("var_list");
+	    	auto comma_node = root.addNodeInBack(",");
+	    	auto varname_node = root.addNodeInBack("VARNAME");
+	    	auto assignment_node = root.addNodeInBack("=");
+	    	root.addLink(node, root.getNodeByIndex($1), Empty{});
+	    	root.addLink(node, comma_node, Empty{});
+	    	root.addLink(node, varname_node, Empty{});
+	    	root.addLink(node, assignment_node, Empty{});
+	    	root.addLink(node, root.getNodeByIndex($5), Empty{});
+	    	$$ = node.getIndex();
+	    }
             ;
  
 array_members_list_e    : /*empty*/

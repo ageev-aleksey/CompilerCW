@@ -96,13 +96,49 @@ std::string graphToDOT(Graph<NodeType, EdgeType> graph) {
         for(typename Graph<NodeType, EdgeType>::Link &link : node.links) {
             printLink<NodeType, EdgeType>(static_cast<std::ostream&>(stream), node, link);
         }
-        if(node.links.empty()) {
+        /*if(node.links.empty()) {
             printNode<NodeType, EdgeType>(static_cast<std::ostream&>(stream), node);
+        }*/
+    }
+    stream << "}\n";
+    return stream.str();
+}
+
+template<typename NodeType, typename EdgeType>
+std::string graphToDOT_reverse(Graph<NodeType, EdgeType> graph) {
+    std::stringstream stream;
+    stream << "digraph {\n";
+    for (auto node_itr = graph.getNodes().crbegin(); node_itr != graph.getNodes().crend(); node_itr++) {
+        for (const typename Graph<NodeType, EdgeType>::Link &link : node_itr->links) {
+            printLink<NodeType, EdgeType>(static_cast<std::ostream &>(stream), *node_itr, link);
+        }
+        /*if (node_itr->links.empty()) {
+            printNode<NodeType, EdgeType>(static_cast<std::ostream &>(stream), *node_itr);
+        }*/
+    }
+    stream << "}\n";
+    return stream.str();
+}
+
+template<typename NodeType, typename EdgeType>
+std::string toDotByDepthStep (Graph<NodeType, EdgeType> graph) {
+    using Graph_t = Graph<NodeType, EdgeType>;
+    std::stringstream stream;
+    stream << "digraph {\n";
+    std::stack<typename Graph_t::iterator> stack;
+    stack.push(graph.lastNode());
+    while(!stack.empty()) {
+        typename Graph_t::iterator node = stack.top();
+        stack.pop();
+        for(auto& link: node.getLinks()) {
+            stack.push(link.node);
+            printLink<NodeType, EdgeType>(static_cast<std::ostream &>(stream), node.getNode(), link);
         }
     }
     stream << "}\n";
     return stream.str();
 }
+
 
 
 bool saveImageGV(std::string dot_str, std::string file_path);

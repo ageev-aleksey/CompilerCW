@@ -3,6 +3,9 @@ project(dummy_parser)
 
 set(CMAKE_CXX_STANDARD 14)
 
+option(TESTS_COMPILE "" ON)
+set(INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR}/include)
+
 file(GLOB SRC ${CMAKE_CURRENT_LIST_DIR}/src/*.cpp ${CMAKE_CURRENT_LIST_DIR}/src/*.c)
 FIND_PACKAGE(BISON REQUIRED)
 FIND_PACKAGE(FLEX REQUIRED)
@@ -23,6 +26,10 @@ ADD_CUSTOM_COMMAND(
 )
 
 
-add_executable(dummy_parser ${SRC} ${FLEX_OUTPUT} ${BISON_OUTPUT})
-target_include_directories(dummy_parser PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
-target_link_libraries(dummy_parser fl)
+add_executable(parser ${SRC} ${FLEX_OUTPUT} ${BISON_OUTPUT})
+target_include_directories(parser PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(parser fl)
+
+if(${TESTS_COMPILE})
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/tests)
+endif()

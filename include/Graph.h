@@ -6,8 +6,9 @@
 #define STATE_MACHINE_FINITESTATEMACHINE_H
 
 #include <iostream>
-#include<list>
+#include <list>
 #include <set>
+#include <stack>
 #include "RegexExceptions.h"
 
 struct Empty {
@@ -65,10 +66,13 @@ public:
     };
     class iterator {
     public:
-        explicit iterator(typename std::list<Node>::iterator itr /*,Graph *const ptr*/) : currentNode(itr) /*ownerPtr(ptr)*/ {
+        iterator() {
+
+        }
+        explicit iterator(typename std::list<Node>::iterator itr) : currentNode(itr) {
         }
 
-        iterator(const iterator &other) : //ownerPtr(other.ownerPtr),
+        iterator(const iterator &other) :
          currentNode(other.currentNode) {
         }
         iterator& operator=(const iterator &other) {
@@ -117,9 +121,25 @@ public:
             return tmp;
         }
 
+        /*void next() {
+            for(auto ptr = ownerPtr->begin(); ptr != ownerPtr->end(); ++ptr) {
+                if(stack.empty()) {
+                    currentNode = ownerPtr->nodes.end();
+
+                } else {
+                    currentNode = stack.top();
+                    stack.pop();
+                    addChildren(currentNode);
+                }
+            }
+
+        }*/
+
 
     private:
-
+       // Graph *ownerPtr;
+     //   std::set<typename std::list<Node>::iterator> visited_node;
+        //std::stack<typename std::list<Node>::iterator> stack;
         typename std::list<Node>::iterator currentNode;
         // Graph *const ownerPtr;
         friend class Graph;
@@ -326,6 +346,8 @@ public:
 private:
     std::list<Node> nodes;
 };
+
+
 
 
 
