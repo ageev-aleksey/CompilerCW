@@ -711,15 +711,52 @@ var_list    : VARNAME
             ;
  
 array_members_list_e    : /*empty*/
+			{
+				auto node = root.addNodeInBack("array_members_list_e");
+				auto empty_node = root.addNodeInBack("empty");
+				root.addLink(node, empty_node, Empty{});
+				$$ = node.getIndex();
+			}
                         | array_members_list
+                        {
+                        	auto node = root.addNodeInBack("array_members_list_e");
+				root.addLink(node, root.getNodeByIndex($1), Empty{});
+				$$ = node.getIndex();
+                        }
                         ;
 
 array_members_list  : array_member
+		    {
+                        	auto node = root.addNodeInBack("array_members_list");
+                        	root.addLink(node, root.getNodeByIndex($1), Empty{});
+                        	$$ = node.getIndex();
+
+		    }
                     | array_members_list ',' array_member
+                    {
+                    	auto node = root.addNodeInBack("array_members_list");
+                    	auto comma_node = root.addNodeInBack(",");
+                    	root.addLink(node, root.getNodeByIndex($1), Empty{});
+                    	root.addLink(node, comma_node, Empty{});
+                    	root.addLink(node, root.getNodeByIndex($3), Empty{});
+                    	$$ = node.getIndex();
+                    }
                     ;
                     
 array_member    : expr SV expr
+		{
+			auto node = root.addNodeInBack("array_member");
+			auto sv_node = root.addNodeInBack("=>");
+			root.addLink(node, root.getNodeByIndex($1), Empty{});
+			root.addLink(node, sv_node, Empty{});
+			root.addLink(node, root.getNodeByIndex($3), Empty{});
+			$$ = node.getIndex();
+		}
                 | expr
+                {
+                	auto node = root.addNodeInBack("array_member");
+                	root.addLink(node, root.getNodeByIndex($1), Empty{});
+                }
                 ;
             
 if_stmt : IF lost_open_par expr lost_close_par stmt

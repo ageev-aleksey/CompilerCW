@@ -7,6 +7,7 @@ WORD {LETTER}({LETTER}|{DIGIT})*
 
 %x C_COMMENT
 %x PHP
+%x QUOTE
 %x SINGLE_QUOTE
 %x DOUBLE_QUOTE
 %%
@@ -64,24 +65,26 @@ WORD {LETTER}({LETTER}|{DIGIT})*
 <PHP>\${WORD}           	{return VARNAME;}
 <PHP>{WORD}                {return ID;}
 <PHP>{DIGIT}+               {return INTCONST;}
-
+<PHP>","                    {return ',';}
 <PHP>"\""   {
-    BEGIN(DOUBLE_QUOTE);
+    BEGIN(QUOTE);
 }
 
-<DOUBLE_QUOTE>"\""  {
+<QUOTE>"\""  {
     BEGIN(PHP);
 }
 
 <PHP>"\'"    {
-    BEGIN(SINGLE_QUOTE);
+    BEGIN(QUOTE);
 }
 
-<SINGLE_QUOTE>"\'"  {
+<QUOTE>"\'"  {
     BEGIN(PHP);
 }
 
-
+<QUOTE>[^'"] {
+    return CHARCONST;
+}
 
 <PHP>[\n\r\t\s]                 {}
 [\n\r\t\s]                 {}
