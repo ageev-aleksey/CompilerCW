@@ -82,7 +82,7 @@ WORD {LETTER}({LETTER}|{DIGIT})*
     BEGIN(PHP);
 }
 
-<QUOTE>[^'"] {
+<QUOTE>[^'"]* {
     return CHARCONST;
 }
 

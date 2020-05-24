@@ -760,13 +760,82 @@ array_member    : expr SV expr
                 ;
             
 if_stmt : IF lost_open_par expr lost_close_par stmt
+	{
+		auto node = root.addNodeInBack("if_stmt");
+		auto if_node = root.addNodeInBack("if");
+		root.addLink(node, if_node, Empty{});
+		root.addLink(node, root.getNodeByIndex($2), Empty{});
+		root.addLink(node, root.getNodeByIndex($3), Empty{});
+		root.addLink(node, root.getNodeByIndex($4), Empty{});
+		root.addLink(node, root.getNodeByIndex($5), Empty{});
+		$$ = node.getIndex();
+	}
         | IF lost_open_par expr lost_close_par stmt ELSE stmt
+        {
+        		auto node = root.addNodeInBack("if_stmt");
+        		auto if_node = root.addNodeInBack("if");
+        		auto else_node = root.addNodeInBack("else");
+        		root.addLink(node, if_node, Empty{});
+        		root.addLink(node, root.getNodeByIndex($2), Empty{});
+        		root.addLink(node, root.getNodeByIndex($3), Empty{});
+        		root.addLink(node, root.getNodeByIndex($4), Empty{});
+        		root.addLink(node, root.getNodeByIndex($5), Empty{});
+        		root.addLink(node, else_node, Empty{});
+        		root.addLink(node, root.getNodeByIndex($7), Empty{});
+        		$$ = node.getIndex();
+        }
         | IF lost_open_par expr lost_close_par stmt elseif_stmt
-        | IF lost_open_par expr lost_close_par stmt elseif_stmt ELSE stmt 
+	{
+		auto node = root.addNodeInBack("if_stmt");
+		auto if_node = root.addNodeInBack("if");
+		root.addLink(node, if_node, Empty{});
+		root.addLink(node, root.getNodeByIndex($2), Empty{});
+		root.addLink(node, root.getNodeByIndex($3), Empty{});
+		root.addLink(node, root.getNodeByIndex($4), Empty{});
+		root.addLink(node, root.getNodeByIndex($5), Empty{});
+		root.addLink(node, root.getNodeByIndex($6), Empty{});
+		$$ = node.getIndex();
+	}
+        | IF lost_open_par expr lost_close_par stmt elseif_stmt ELSE stmt
+        {
+        	auto node = root.addNodeInBack("if_stmt");
+        	auto if_node = root.addNodeInBack("if");
+        	auto else_node = root.addNodeInBack("else");
+        	root.addLink(node, if_node, Empty{});
+        	root.addLink(node, root.getNodeByIndex($2), Empty{});
+        	root.addLink(node, root.getNodeByIndex($3), Empty{});
+        	root.addLink(node, root.getNodeByIndex($4), Empty{});
+        	root.addLink(node, root.getNodeByIndex($5), Empty{});
+        	root.addLink(node, root.getNodeByIndex($6), Empty{});
+        	root.addLink(node, else_node, Empty{});
+        	root.addLink(node, root.getNodeByIndex($8), Empty{});
+        	$$ = node.getIndex();
+        }
         ;
 
 elseif_stmt : ELSEIF lost_open_par expr lost_close_par stmt
-            | elseif_stmt ELSEIF lost_open_par expr lost_close_par stmt 
+	    {
+	    	auto node = root.addNodeInBack("elseif_stmt");
+	    	auto elseif_node = root.addNodeInBack("elseif");
+	    	root.addLink(node, elseif_node, Empty{});
+	    	root.addLink(node, root.getNodeByIndex($2), Empty{});
+	    	root.addLink(node, root.getNodeByIndex($3), Empty{});
+	    	root.addLink(node, root.getNodeByIndex($4), Empty{});
+	    	root.addLink(node, root.getNodeByIndex($5), Empty{});
+	    	$$ = node.getIndex();
+	    }
+            | elseif_stmt ELSEIF lost_open_par expr lost_close_par stmt
+            {
+            	auto node = root.addNodeInBack("elseif_stmt");
+            	auto elseif_node = root.addNodeInBack("elseif");
+            	root.addLink(node, root.getNodeByIndex($1), Empty{});
+            	root.addLink(node, elseif_node, Empty{});
+            	root.addLink(node, root.getNodeByIndex($3), Empty{});
+            	root.addLink(node, root.getNodeByIndex($4), Empty{});
+            	root.addLink(node, root.getNodeByIndex($5), Empty{});
+            	root.addLink(node, root.getNodeByIndex($6), Empty{});
+            	$$ = node.getIndex();
+            }
             ;
             
 switch_stmt : SWITCH lost_open_par expr lost_close_par '{' case_stmt_list '}' 
