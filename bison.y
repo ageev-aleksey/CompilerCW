@@ -838,12 +838,66 @@ elseif_stmt : ELSEIF lost_open_par expr lost_close_par stmt
             }
             ;
             
-switch_stmt : SWITCH lost_open_par expr lost_close_par '{' case_stmt_list '}' 
+switch_stmt : SWITCH lost_open_par expr lost_close_par '{' case_stmt_list '}'
+	    {
+	    	auto node = root.addNodeInBack("switch_stmt");
+	    	auto switch_node = root.addNodeInBack("switch");
+	    	auto openbreacket_node = root.addNodeInBack("{");
+	    	auto closebreacket_node = root.addNodeInBack("}");
+	    	root.addLink(node, switch_node, Empty{});
+	    	root.addLink(node, root.getNodeByIndex($2), Empty{});
+	    	root.addLink(node, root.getNodeByIndex($3), Empty{});
+	    	root.addLink(node, root.getNodeByIndex($4), Empty{});
+	    	root.addLink(node, openbreacket_node, Empty{});
+	    	root.addLink(node, root.getNodeByIndex($6), Empty{});
+	    	root.addLink(node, closebreacket_node, Empty{});
+	    	$$ = node.getIndex();
+	    }
             | SWITCH lost_open_par expr lost_close_par '{' case_stmt_list DEFAULT ':' stmt_list_e '}'
+	    {
+	    	auto node = root.addNodeInBack("switch_stmt");
+	    	auto switch_node = root.addNodeInBack("switch");
+	    	auto openbreacket_node = root.addNodeInBack("{");
+	    	auto closebreacket_node = root.addNodeInBack("}");
+	    	auto default_node = root.addNodeInBack("default");
+	    	auto colon_node = root.addNodeInBack(":");
+	    	root.addLink(node, switch_node, Empty{});
+	    	root.addLink(node, root.getNodeByIndex($2), Empty{});
+	    	root.addLink(node, root.getNodeByIndex($3), Empty{});
+	    	root.addLink(node, root.getNodeByIndex($4), Empty{});
+	    	root.addLink(node, openbreacket_node, Empty{});
+	    	root.addLink(node, root.getNodeByIndex($6), Empty{});
+	    	root.addLink(node, default_node, Empty{});
+	    	root.addLink(node, colon_node, Empty{});
+	    	root.addLink(node, root.getNodeByIndex($9), Empty{});
+	    	root.addLink(node, closebreacket_node, Empty{});
+	    	$$ = node.getIndex();
+	    }
             ;
 
 case_stmt_list : CASE expr ':' stmt_list_e
+	       {
+			auto node = root.addNodeInBack("case_stmt_list");
+			auto case_node = root.addNodeInBack("case");
+			auto colon_node = root.addNodeInBack(":");
+			root.addLink(node, case_node, Empty{});
+			root.addLink(node, root.getNodeByIndex($2), Empty{});
+			root.addLink(node, colon_node, Empty{});
+			root.addLink(node, root.getNodeByIndex($4), Empty{});
+			$$ = node.getIndex();
+	       }
                | case_stmt_list  CASE expr ':' stmt_list_e
+               {
+               		auto node = root.addNodeInBack("case_stmt_list");
+               		auto case_node = root.addNodeInBack("case");
+               		auto colon_node = root.addNodeInBack(":");
+               		root.addLink(node, root.getNodeByIndex($1), Empty{});
+               		root.addLink(node, case_node, Empty{});
+               		root.addLink(node, root.getNodeByIndex($3), Empty{});
+               		root.addLink(node, colon_node, Empty{});
+               		root.addLink(node, root.getNodeByIndex($5), Empty{});
+               		$$ = node.getIndex();
+               }
               ;
 
 function_def : FUNCTION ID lost_open_par var_list_e lost_close_par '{' stmt_list_e '}'
