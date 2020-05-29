@@ -40,6 +40,7 @@ WORD {LETTER}({LETTER}|{DIGIT})*
 <PHP>"private"				{return PRIVATE;}
 <PHP>"protected"			{return PROTECTED;}
 <PHP>"extends"				{return EXTENDS;}
+<PHP>"return"               {return RETURN;}
 <PHP>":"					{return ':';}
 <PHP>";"					{return ';';}
 <PHP>"("					{return '(';}
@@ -61,11 +62,13 @@ WORD {LETTER}({LETTER}|{DIGIT})*
 <PHP>"*" 					{return '*';}
 <PHP>"/" 					{return '/';}
 <PHP>"array" 				{return ARRAY;}
+<PHP>"new" 				    {return NEW;}
 <PHP>"=>"					{return SV;}
 <PHP>\${WORD}           	{return VARNAME;}
-<PHP>{WORD}                {return ID;}
+<PHP>{WORD}                 {return ID;}
 <PHP>{DIGIT}+               {return INTCONST;}
 <PHP>","                    {return ',';}
+<PHP>"."                    {return '.';}
 <PHP>"\""   {
     BEGIN(QUOTE);
 }

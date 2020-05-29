@@ -90,6 +90,9 @@ PROTECTED
 
 %%
 
+
+
+
 program : main_stmt_tag_list
 	{
 		$$ = createNode("program", {$1});
@@ -144,13 +147,16 @@ stmt_list   : stmt
 
 stmt_list_e :  /*empty*/
 	    {
-	    	$$ = createNode("stmt_list_e", {});
+	    	auto node = root.addNodeInBack("stmt_list_e");
 	    	auto empty = root.addNodeInBack("empty");
-	    	root.addLink(root.getNodeByIndex($$), empty, Empty{});
+	    	root.addLink(node, empty, Empty{});
+	    	$$ = node.getIndex();
 	    }
             | stmt_list
             {
-            	$$ = createNode("stmt_list_e", {$1});
+            	auto node = root.addNodeInBack("stmt_list_e");
+            	root.addLink(node, root.getNodeByIndex($1), Empty{});
+            	$$ = node.getIndex();
             }
             ;
             
@@ -303,6 +309,7 @@ stmt    : expr_e ';'
         	auto return_node = root.addNodeInBack("RETURN");
         	auto semicolon_node = root.addNodeInBack(";");
         	root.addLink(node, return_node, Empty{});
+        	root.addLink(node, root.getNodeByIndex($2), Empty{});
         	root.addLink(node, semicolon_node, Empty{});
         	$$ = node.getIndex();
         }
@@ -318,7 +325,7 @@ stmt    : expr_e ';'
         }
         ; 
  
-expr    : VARNAME
+expr    : var_name
 	{
 		auto node = root.addNodeInBack("expr");
 		auto varname_node = root.addNodeInBack("VARNAME");
@@ -496,9 +503,6 @@ expr    : VARNAME
         	root.addLink(node, id_node, Empty{});
         	root.addLink(node, root.getNodeByIndex($2), Empty{});
         	root.addLink(node, root.getNodeByIndex($3), Empty{});
-        	root.addLink(node, id_node, Empty{});
-                root.addLink(node, root.getNodeByIndex($2), Empty{});
-               	root.addLink(node, root.getNodeByIndex($3), Empty{});
                	root.addLink(node, root.getNodeByIndex($4), Empty{});
                	$$ = node.getIndex();
 
@@ -901,25 +905,165 @@ case_stmt_list : CASE expr ':' stmt_list_e
               ;
 
 function_def : FUNCTION ID lost_open_par var_list_e lost_close_par '{' stmt_list_e '}'
+	     {
+	     	auto node = root.addNodeInBack("function_def");
+	     	auto function_node = root.addNodeInBack("function");
+	     	auto id_node = root.addNodeInBack("ID");
+	     	auto openbreaket_node = root.addNodeInBack("{");
+	     	auto closebreaket_node = root.addNodeInBack("}");
+	     	root.addLink(node, function_node, Empty{});
+	     	root.addLink(node, id_node, Empty{});
+	     	root.addLink(node, root.getNodeByIndex($3), Empty{});
+	     	root.addLink(node, root.getNodeByIndex($4), Empty{});
+	     	root.addLink(node, root.getNodeByIndex($5), Empty{});
+	     	root.addLink(node, openbreaket_node, Empty{});
+	     	root.addLink(node, root.getNodeByIndex($7), Empty{});
+	     	root.addLink(node, closebreaket_node, Empty{});
+	     	$$ = node.getIndex();
+	     }
              ;
 
 class_def : CLASS ID '{' class_body_e '}'
+	  {
+	  	auto node = root.addNodeInBack("class_def");
+	  	auto class_node = root.addNodeInBack("class");
+	  	auto id_node = root.addNodeInBack("ID");
+	  	auto openbreaket_node = root.addNodeInBack("{");
+	  	auto closebreaket_node = root.addNodeInBack("}");
+	  	root.addLink(node, class_node, Empty{});
+	  	root.addLink(node, id_node, Empty{});
+	  	root.addLink(node, openbreaket_node, Empty{});
+	  	root.addLink(node, root.getNodeByIndex($4), Empty{});
+	  	root.addLink(node, closebreaket_node, Empty{});
+	  	$$ = node.getIndex();
+	  }
           | CLASS ID EXTENDS ID '{' class_body_e '}'
+          {
+		auto node = root.addNodeInBack("class_def");
+	  	auto class_node = root.addNodeInBack("class");
+	  	auto id1_node = root.addNodeInBack("ID");
+	  	auto extends_node = root.addNodeInBack("extends");
+	  	auto id2_node = root.addNodeInBack("ID");
+	  	auto openbreaket_node = root.addNodeInBack("{");
+	  	auto closebreaket_node = root.addNodeInBack("}");
+	  	root.addLink(node, class_node, Empty{});
+	  	root.addLink(node, id1_node, Empty{});
+	  	root.addLink(node, extends_node, Empty{});
+	  	root.addLink(node, id2_node, Empty{});
+	  	root.addLink(node, openbreaket_node, Empty{});
+	  	root.addLink(node, root.getNodeByIndex($6), Empty{});
+	  	root.addLink(node, closebreaket_node, Empty{});
+	  	$$ = node.getIndex();
+          }
           ;
 
 class_body_element  : VAR VARNAME ';'
+		    {
+		    	auto node = root.addNodeInBack("class_body_element");
+		    	auto var_node = root.addNodeInBack("var");
+		    	auto varname_node = root.addNodeInBack("VARNAME");
+		    	auto semicolon_node = root.addNodeInBack(";");
+		    	root.addLink(node, var_node, Empty{});
+		    	root.addLink(node, varname_node, Empty{});
+		    	root.addLink(node, semicolon_node, Empty{});
+		    	$$ = node.getIndex();
+		    }
                     | PUBLIC VARNAME ';'
+		    {
+		    	auto node = root.addNodeInBack("class_body_element");
+		    	auto public_node = root.addNodeInBack("public");
+		    	auto varname_node = root.addNodeInBack("VARNAME");
+		    	auto semicolon_node = root.addNodeInBack(";");
+		    	root.addLink(node, public_node, Empty{});
+		    	root.addLink(node, varname_node, Empty{});
+		    	root.addLink(node, semicolon_node, Empty{});
+		    	$$ = node.getIndex();
+		    }
                     | PRIVATE VARNAME ';'
-                    | PROTECTED VARNAME ';' 
+		    {
+		    	auto node = root.addNodeInBack("class_body_element");
+		    	auto private_node = root.addNodeInBack("private");
+		    	auto varname_node = root.addNodeInBack("VARNAME");
+		    	auto semicolon_node = root.addNodeInBack(";");
+		    	root.addLink(node, private_node, Empty{});
+		    	root.addLink(node, varname_node, Empty{});
+		    	root.addLink(node, semicolon_node, Empty{});
+		    	$$ = node.getIndex();
+		    }
+                    | PROTECTED VARNAME ';'
+		    {
+		    	auto node = root.addNodeInBack("class_body_element");
+		    	auto protected_node = root.addNodeInBack("protected");
+		    	auto varname_node = root.addNodeInBack("VARNAME");
+		    	auto semicolon_node = root.addNodeInBack(";");
+		    	root.addLink(node, protected_node, Empty{});
+		    	root.addLink(node, varname_node, Empty{});
+		    	root.addLink(node, semicolon_node, Empty{});
+		    	$$ = node.getIndex();
+		    }
                     | function_def
+                    {
+                    	auto node = root.addNodeInBack("class_body_element");
+                    	root.addLink(node, root.getNodeByIndex($1), Empty{});
+                    	$$ = node.getIndex();
+                    }
                     | PUBLIC function_def
+                    {
+                    	auto node = root.addNodeInBack("class_body_element");
+                    	auto public_node = root.addNodeInBack("public");
+                    	root.addLink(node, public_node, Empty{});
+                    	root.addLink(node, root.getNodeByIndex($2), Empty{});
+                    	$$ = node.getIndex();
+                    }
                     | PRIVATE function_def
+                    {
+                    	auto node = root.addNodeInBack("class_body_element");
+                    	auto private_node = root.addNodeInBack("private");
+                    	root.addLink(node, private_node, Empty{});
+                    	root.addLink(node, root.getNodeByIndex($2), Empty{});
+                    	$$ = node.getIndex();
+                    }
                     | PROTECTED function_def
+                    {
+                    	auto node = root.addNodeInBack("class_body_element");
+                    	auto protected_node = root.addNodeInBack("protected");
+                    	root.addLink(node, protected_node, Empty{});
+                    	root.addLink(node, root.getNodeByIndex($2), Empty{});
+                    	$$ = node.getIndex();
+                    }
                     ;
 class_body : class_body_element
+	   {
+		auto node = root.addNodeInBack("class_body");
+		root.addLink(node, root.getNodeByIndex($1), Empty{});
+		$$ = node.getIndex();
+	   }
            |class_body class_body_element
+	   {
+		auto node = root.addNodeInBack("class_body");
+		root.addLink(node, root.getNodeByIndex($1), Empty{});
+		root.addLink(node, root.getNodeByIndex($2), Empty{});
+		$$ = node.getIndex();
+	   }
            ;
 
 class_body_e : /*empty*/
+             {
+		auto node = root.addNodeInBack("class_body_e");
+		auto empty_node = root.addNodeInBack("empty");
+		root.addLink(node, empty_node, Empty{});
+		$$ = node.getIndex();
+             }
              |class_body
+             {
+             	auto node = root.addNodeInBack("class_body_e");
+             	root.addLink(node, root.getNodeByIndex($1), Empty{});
+             	$$ = node.getIndex();
+             }
              ;
+
+var_name : VARNAME
+	 {
+
+	 }
+	 ;

@@ -7,6 +7,7 @@ option(TESTS_COMPILE "" ON)
 set(INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR}/include)
 
 file(GLOB SRC ${CMAKE_CURRENT_LIST_DIR}/src/*.cpp ${CMAKE_CURRENT_LIST_DIR}/src/*.c)
+file(GLOB SRC_parser  ${CMAKE_CURRENT_LIST_DIR}/src/parser/*.cpp)
 FIND_PACKAGE(BISON REQUIRED)
 FIND_PACKAGE(FLEX REQUIRED)
 
@@ -16,7 +17,7 @@ set(FLEX_OUTPUT lex.yy.c)
 ADD_CUSTOM_COMMAND(
         OUTPUT ${BISON_OUTPUT}
         PRE-BUILD
-       COMMAND ${BISON_EXECUTABLE}  -d ${CMAKE_CURRENT_LIST_DIR}/bison.y -o ${BISON_OUTPUT}
+        COMMAND ${BISON_EXECUTABLE}  -d ${CMAKE_CURRENT_LIST_DIR}/bison.y -o ${BISON_OUTPUT}
 )
 
 ADD_CUSTOM_COMMAND(
@@ -26,7 +27,7 @@ ADD_CUSTOM_COMMAND(
 )
 
 
-add_executable(parser ${SRC} ${FLEX_OUTPUT} ${BISON_OUTPUT})
+add_executable(parser ${SRC}  ${SRC_parser} ${FLEX_OUTPUT}  ${BISON_OUTPUT})
 target_include_directories(parser PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 target_link_libraries(parser fl)
 
