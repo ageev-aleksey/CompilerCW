@@ -1,4 +1,4 @@
 .idea/
 cmake-*/
 src/bison.cpp
-src/bison.hpp
+include/bison.h

@@ -21,11 +21,25 @@ WORD {LETTER}({LETTER}|{DIGIT})*
 <C_COMMENT>.                 {}
 <PHP>"//"(.+|\n)             {}
 
-<PHP>"echo"                 {return ECHO_KW;}
-<PHP>"break" 				{return BREAK;}
-<PHP>"while" 				{return WHILE;}
-<PHP>"do"					{return DO;}
-<PHP>"for"					{return FOR;}
+<PHP>"echo"                 {
+    yylval.string = yytext;
+    return ECHO_KW;
+}
+<PHP>"break" 				{
+    yylval.string = yytext;
+    return BREAK;
+    }
+<PHP>"while" 				{
+    yylval.string = yytext;
+    return WHILE;
+}
+<PHP>"do"					{
+    yylval.string = yytext;
+    return DO;
+}
+<PHP>"for"					{
+    yylval.string = yytext;
+return FOR;}
 <PHP>"foreach"				{return FOREACH;}
 <PHP>"as"					{return AS;}
 <PHP>"if"					{return IF;}
@@ -64,7 +78,9 @@ WORD {LETTER}({LETTER}|{DIGIT})*
 <PHP>"array" 				{return ARRAY;}
 <PHP>"new" 				    {return NEW;}
 <PHP>"=>"					{return SV;}
-<PHP>\${WORD}           	{return VARNAME;}
+<PHP>\${WORD}           	{
+    yylval.string = yytext;
+return VARNAME;}
 <PHP>{WORD}                 {return ID;}
 <PHP>{DIGIT}+               {return INTCONST;}
 <PHP>","                    {return ',';}

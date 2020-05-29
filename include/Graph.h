@@ -222,12 +222,20 @@ public:
        }
     }
 
+    iterator newNode(const NodeData &data) {
+        return addNodeInBack(data);
+    }
+
     iterator getNodeByIndex(size_t index) {
         auto itr = nodes.begin();
         for(size_t i = 0; i < index; i++) {
             itr++;
         }
         return iterator(itr);
+    }
+
+    iterator get(size_t index) {
+        return getNodeByIndex(index);
     }
 
     iterator end() {

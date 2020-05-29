@@ -4,6 +4,8 @@
 	#include <vector>
 	#include "Graph.h"
 	#include "GraphToDOT.h"
+	#include "Tokens.h"
+	#include <memory>
 	#define YYDEBUG 1
 	#define YYSTYPE int
     extern "C" int yyparse();
@@ -12,8 +14,14 @@
     extern "C" FILE* yyin;
     extern "C" int yydebug;
 
+    struct token_type {
+      int index;
+      std::string value;
+    };
 
-	Graph<std::string, Empty> root;
+    #define YYSTYPE struct token_type
+
+	Graph<std::shared_ptr<Token>, Empty> root;
 
 	void yyerror(const char *str) {
 		std::cout << "-===========-" << std::endl;
@@ -25,30 +33,30 @@
 		return 1;
 	}
 
-	int create_op_node(std::string value, std::string op, int v1, int v2) {
+	int create_op_node(std::string value, std::string op, token_type v1, token_type v2) {
 
                 auto node = root.addNodeInBack(value);
                 auto op_node = root.addNodeInBack(op);
-                root.addLink(node, root.getNodeByIndex(v1), Empty{});
+                root.addLink(node, root.getNodeByIndex(v1.index), Empty{});
                 root.addLink(node, op_node, Empty{});
-                root.addLink(node, root.getNodeByIndex(v2), Empty{});
+                root.addLink(node, root.getNodeByIndex(v2.index), Empty{});
          	return node.getIndex();
 
 	}
 
-	int create_unar_op_node(std::string value, std::string op, int v)
+	int create_unar_op_node(std::string value, std::string op, token_type v)
 	{
             auto node = root.addNodeInBack(value);
             auto unar_node = root.addNodeInBack(op);
             root.addLink(node, unar_node, Empty{});
-            root.addLink(node, root.getNodeByIndex(v), Empty{});
+            root.addLink(node, root.getNodeByIndex(v.index), Empty{});
             return node.getIndex();
        	}
 
-	int createNode(std::string value, std::vector<int> children_index) {
+	int createNode(std::string value, std::vector<token_type> children_index) {
 		auto node = root.addNodeInBack(value);
 		for(auto ptr = children_index.begin(); ptr != children_index.end(); ++ptr) {
-			root.addLink(node, root.getNodeByIndex(*ptr), Empty{});
+			root.addLink(node, root.getNodeByIndex(ptr->ptr), Empty{});
 		}
                	return node.getIndex();
 	}
@@ -69,7 +77,7 @@
 	}
 %}
 
-%token  BREAK CLONE ENDSWITCH HTML WHILE DO FOR FOREACH VARNAME AS SV RETURN INTCONST CHARCONST PAS DIVAS MODAS EQ NE TEQ TNE LEQ GEQ AND OR PP MM UPLUS UMINUS ARRAY ID ARROW NEW PARENT DCOL IF ELSE ELSEIF SWITCH DEFAULT CASE FUNCTION CLASS EXTENDS VAR PUBLIC PRIVATE PROTECTED ECHO_KW MAS MULAS UNDEFINED
+%token NonTerminal BREAK CLONE ENDSWITCH HTML WHILE DO FOR FOREACH VARNAME AS SV RETURN INTCONST CHARCONST PAS DIVAS MODAS EQ NE TEQ TNE LEQ GEQ AND OR PP MM UPLUS UMINUS ARRAY ID ARROW NEW PARENT DCOL IF ELSE ELSEIF SWITCH DEFAULT CASE FUNCTION CLASS EXTENDS VAR PUBLIC PRIVATE PROTECTED ECHO_KW MAS MULAS UNDEFINED
 
 %right '='
 %left '(' ')'
@@ -95,53 +103,53 @@ PROTECTED
 
 program : main_stmt_tag_list
 	{
-		$$ = createNode("program", {$1});
+		$$.index = createNode("program", {$1});
 	}
         ; 
 main_stmt_tag_list  : main_stmt
 			{
-				$$ = createNode("main_stmt_tag_list", {$1});
+				$$.index = createNode("main_stmt_tag_list", {$1});
 			}
                     | main_stmt_tag_list main_stmt
                     	{
-                    		$$ = createNode("main_stmt_tag_list", {$1, $2});
+                    		$$.index = createNode("main_stmt_tag_list", {$1, $2});
                     	}
                     | HTML
                     {
 			auto node = root.addNodeInBack("main_stmt_tag_list");
-                    	auto html_node = root.addNodeInBack(std::string("HTML"));
+                    	auto html_node = root.addNodeInBack(std::make_shared<HtmlToken>($1.string));
                     	root.addLink(node, html_node, Empty{});
-                    	$$ = node.getIndex();
+                    	$$.index = node.getIndex();
 
                     }
                     | main_stmt_tag_list HTML
                     {
-                    	$$ = createNode("main_stmt_tag_list", {$1});
+                    	$$.index = createNode("main_stmt_tag_list", {$1});
                     	auto html_node = root.addNodeInBack(std::string("HTML"));
                     	root.addLink(root.getNodeByIndex($$), html_node, Empty{});
                     }
                     ;
 main_stmt   : class_def
 	    {
-	    	$$ = createNode("main_stmt", {$1});
+	    	$$.index = createNode("main_stmt", {$1});
 	    }
             | function_def
             {
-            	$$ = createNode("main_stmt", {$1});
+            	$$.index = createNode("main_stmt", {$1});
             }
             | stmt
             {
-            	$$ = createNode("main_stmt", {$1});
+            	$$.index = createNode("main_stmt", {$1});
             }
             ;
 
 stmt_list   : stmt
 	   {
-	    	$$ = createNode("stmt_list", {$1});
+	    	$$.index = createNode("stmt_list", {$1});
 	    }
             | stmt_list stmt
             {
-            	$$ = createNode("stmt_list", {$1, $2});
+            	$$.index = createNode("stmt_list", {$1, $2});
             }
             ; 
 
@@ -150,13 +158,13 @@ stmt_list_e :  /*empty*/
 	    	auto node = root.addNodeInBack("stmt_list_e");
 	    	auto empty = root.addNodeInBack("empty");
 	    	root.addLink(node, empty, Empty{});
-	    	$$ = node.getIndex();
+	    	$$.index = node.getIndex();
 	    }
             | stmt_list
             {
             	auto node = root.addNodeInBack("stmt_list_e");
             	root.addLink(node, root.getNodeByIndex($1), Empty{});
-            	$$ = node.getIndex();
+            	$$.index = node.getIndex();
             }
             ;
             
@@ -165,11 +173,11 @@ lost_close_par  : ')'	%prec ')'
 			auto node = root.addNodeInBack("lost_close_par");
 			auto braket_node = root.addNodeInBack(")");
 			root.addLink(node, braket_node, Empty{});
-			$$ = node.getIndex();
+			$$.index = node.getIndex();
 		}
                 | error %prec ')'
                 {
-                	$$ = createNode("lost_close_par", {$1});
+                	$$.index = createNode("lost_close_par", {$1});
                 }
                 ;
 lost_open_par  : '('	%prec '('
@@ -177,7 +185,7 @@ lost_open_par  : '('	%prec '('
 			auto node = root.addNodeInBack("lost_open_par");
 			auto braket_node = root.addNodeInBack("(");
 			root.addLink(node, braket_node, Empty{});
-			$$ = node.getIndex();
+			$$.index = node.getIndex();
 		}
                 | error %prec '('
                 {
@@ -1058,12 +1066,15 @@ class_body_e : /*empty*/
              {
              	auto node = root.addNodeInBack("class_body_e");
              	root.addLink(node, root.getNodeByIndex($1), Empty{});
-             	$$ = node.getIndex();
+             	$$.index = node.getIndex();
              }
              ;
 
+
 var_name : VARNAME
 	 {
-
+		auto node = root.addNodeInBack(std::make_shared<VarName>($1.string))
+		$$.string = $1.string;
+		$$.index = node.getIndex();
 	 }
 	 ;

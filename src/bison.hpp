@@ -40,18 +40,12 @@
 extern int yydebug;
 #endif
 
-struct token_type {
-    int index;
-    char *string;
-};
-
-
 /* Token type.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
-    NonTerminal = 258,
+    NON_TERM = 258,
     BREAK = 259,
     CLONE = 260,
     ENDSWITCH = 261,
@@ -115,7 +109,7 @@ typedef int YYSTYPE;
 #endif
 
 
-extern struct token_type yylval;
+extern YYSTYPE yylval;
 
 int yyparse (void);
 

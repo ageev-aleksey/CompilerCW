@@ -4,5 +4,19 @@
 
 #ifndef DUMMY_PARSER_UNARYOPERATION_H
 #define DUMMY_PARSER_UNARYOPERATION_H
+#include "parser/Token.h"
 
+
+
+class UnaryOperation : public Token {
+public:
+    enum class Type {
+        LOGICAL,
+        UNKNOWN
+    };
+    UnaryOperation(std::string symbol, Type type);
+    Type getOpType();
+private:
+    Type type;
+};
 #endif //DUMMY_PARSER_UNARYOPERATION_H

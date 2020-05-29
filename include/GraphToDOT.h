@@ -61,7 +61,7 @@
 template<typename NodeType, typename EdgeType>
 std::ostream& printLink(std::ostream &stream, const typename Graph<NodeType, EdgeType>::Node& n,
         const typename Graph<NodeType, EdgeType>::Link &l) {
-    stream << '"' <<n.index << " (" << n.data << ")\"" << " -> " << '"' << l.node.getIndex() << " (" <<l.node.getData() << ")\" [label=\"" << l.data << "\"]\n";
+    stream << '"' <<n.index << " (" << *n.data << ")\"" << " -> " << '"' << l.node.getIndex() << " (" <<*l.node.getData() << ")\" [label=\"" << l.data << "\"]\n";
     return stream;
 }
 
@@ -126,13 +126,17 @@ std::string toDotByDepthStep (Graph<NodeType, EdgeType> graph) {
     std::stringstream stream;
     stream << "digraph {\n";
     std::stack<typename Graph_t::iterator> stack;
+    std::set<int> isVisited;
     stack.push(graph.lastNode());
     while(!stack.empty()) {
         typename Graph_t::iterator node = stack.top();
         stack.pop();
+        isVisited.insert(node.getIndex());
         for(auto& link: node.getLinks()) {
-            stack.push(link.node);
-            printLink<NodeType, EdgeType>(static_cast<std::ostream &>(stream), node.getNode(), link);
+            if(isVisited.find(link.node.getIndex()) == isVisited.end()) {
+                stack.push(link.node);
+                printLink<NodeType, EdgeType>(static_cast<std::ostream &>(stream), node.getNode(), link);
+            }
         }
     }
     stream << "}\n";

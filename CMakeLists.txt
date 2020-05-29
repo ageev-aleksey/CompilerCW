@@ -14,10 +14,11 @@ FIND_PACKAGE(FLEX REQUIRED)
 set(BISON_OUTPUT ${CMAKE_CURRENT_LIST_DIR}/src/bison.cpp)
 set(FLEX_OUTPUT lex.yy.c)
 
+add_custom_target(bison)
+
 ADD_CUSTOM_COMMAND(
-        OUTPUT ${BISON_OUTPUT}
-        PRE-BUILD
-        COMMAND ${BISON_EXECUTABLE}  -d ${CMAKE_CURRENT_LIST_DIR}/bison.y -o ${BISON_OUTPUT}
+        OUTPUT  ${BISON_OUTPUT}
+        COMMAND ${BISON_EXECUTABLE}  -d ${CMAKE_CURRENT_LIST_DIR}/bison-dev.y -o ${BISON_OUTPUT}
 )
 
 ADD_CUSTOM_COMMAND(
@@ -28,7 +29,7 @@ ADD_CUSTOM_COMMAND(
 
 
 add_executable(parser ${SRC}  ${SRC_parser} ${FLEX_OUTPUT}  ${BISON_OUTPUT})
-target_include_directories(parser PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+target_include_directories(parser PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include ${CMAKE_CURRENT_LIST_DIR}/parser)
 target_link_libraries(parser fl)
 
 if(${TESTS_COMPILE})
