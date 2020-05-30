@@ -13,7 +13,8 @@ public:
     enum class Type{
         MATH,
         LOGICAL,
-        FUNCTION_CALL
+        FUNCTION_CALL,
+        ARRAY_INDEX
     };
     BinaryOperation(std::string op_symbol, Type type);
     Type getOpType();

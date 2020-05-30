@@ -123,7 +123,7 @@ expr    : var_name
         }
         | expr '[' expr ']'
         {
-		//TODO !
+		$$.index = createBinaryOperation(".",BinaryOperation::Type::ARRAY_INDEX, $1, $3);
         }
         | expr '.' expr
         {
@@ -175,55 +175,55 @@ expr    : var_name
         }
         | expr EQ expr
         {
-		$$.index = createBinaryOperation($2.string,BinaryOperation::Type::LOGICAL, $1, $3);
+		$$.index = createBinaryOperation("==", BinaryOperation::Type::LOGICAL, $1, $3);
         }
         | expr NE expr
          {
-		$$.index = createBinaryOperation($2.string,BinaryOperation::Type::LOGICAL, $1, $3);
+		$$.index = createBinaryOperation("!=" ,BinaryOperation::Type::LOGICAL, $1, $3);
          }
         | expr TEQ expr
         {
-		$$.index = createBinaryOperation($2.string,BinaryOperation::Type::LOGICAL, $1, $3);
+		$$.index = createBinaryOperation("===",BinaryOperation::Type::LOGICAL, $1, $3);
         }
         | expr TNE expr
          {
-		$$.index = createBinaryOperation($2.string,BinaryOperation::Type::LOGICAL, $1, $3);
+		$$.index = createBinaryOperation("!==",BinaryOperation::Type::LOGICAL, $1, $3);
          }
         | expr '<' expr
         {
-		$$.index = createBinaryOperation($2.string,BinaryOperation::Type::LOGICAL, $1, $3);
+		$$.index = createBinaryOperation("<",BinaryOperation::Type::LOGICAL, $1, $3);
         }
         | expr LEQ expr
         {
-		$$.index = createBinaryOperation($2.string,BinaryOperation::Type::LOGICAL, $1, $3);
+		$$.index = createBinaryOperation("<=",BinaryOperation::Type::LOGICAL, $1, $3);
         }
         | expr '>' expr
         {
-		$$.index = createBinaryOperation($2.string,BinaryOperation::Type::LOGICAL, $1, $3);
+		$$.index = createBinaryOperation(">",BinaryOperation::Type::LOGICAL, $1, $3);
         }
         | expr GEQ expr
         {
-		$$.index = createBinaryOperation($2.string,BinaryOperation::Type::LOGICAL, $1, $3);
+		$$.index = createBinaryOperation(">=" ,BinaryOperation::Type::LOGICAL, $1, $3);
         }
         | expr AND expr
         {
-		$$.index = createBinaryOperation($2.string,BinaryOperation::Type::LOGICAL, $1, $3);
+		$$.index = createBinaryOperation("&&", BinaryOperation::Type::LOGICAL, $1, $3);
         }
         | expr OR expr
         {
-		$$.index = createBinaryOperation($2.string,BinaryOperation::Type::LOGICAL, $1, $3);
+		$$.index = createBinaryOperation("||",BinaryOperation::Type::LOGICAL, $1, $3);
         }
         | '!' expr
         {
-		$$.index = createUnaryOperation($1.string,UnaryOperation::Type::LOGICAL, $2);
+		$$.index = createUnaryOperation("!",UnaryOperation::Type::LOGICAL, $2);
         }
         | PP expr
         {
-		$$.index = createUnaryOperation($1.string, UnaryOperation::Type::LOGICAL, $2);
+		$$.index = createUnaryOperation("PP", UnaryOperation::Type::LOGICAL, $2);
 	}
         | MM expr
         {
-		$$.index = createUnaryOperation($1.string,UnaryOperation::Type::LOGICAL, $2);
+		$$.index = createUnaryOperation("MM",UnaryOperation::Type::LOGICAL, $2);
 	}
         | expr PP
         {
@@ -235,11 +235,11 @@ expr    : var_name
 	}
         | '+' expr %prec UPLUS
         {
-		$$.index = createUnaryOperation($1.string,UnaryOperation::Type::LOGICAL, $2);
+		$$.index = createUnaryOperation("+",UnaryOperation::Type::MATH, $2);
         }
         | '-' expr %prec UMINUS
         {
-		$$.index = createUnaryOperation($1.string,UnaryOperation::Type::LOGICAL, $2);
+		$$.index = createUnaryOperation("-",UnaryOperation::Type::MATH, $2);
         }
         | lost_open_par expr lost_close_par
         {
@@ -247,44 +247,71 @@ expr    : var_name
         }
         | ARRAY lost_open_par array_members_list_e lost_close_par
         {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::CREATE_ARRAY, "expr"));
+		root.addLink(node, root.get($3.index), Empty{});
+		$$.index = node.getIndex();
         }
-        | ID lost_open_par expr_list_e lost_close_par
+        | id lost_open_par expr_list_e lost_close_par
         {
-
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::FUNC_CALL, "expr"));
+		root.addLink(node, root.get($1.index), Empty{});
+		root.addLink(node, root.get($3.index), Empty{});
+		$$.index = node.getIndex();
         }
-        | expr ARROW ID
+        | expr ARROW id
         {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::METHOD_CALL,  $2.string));
+               	root.addLink(node, root.get($1.index), Empty{});
+               	$$.index = node.getIndex();
         }
-        | expr ARROW ID lost_open_par expr_list_e lost_close_par
+        | expr ARROW id lost_open_par expr_list_e lost_close_par
         {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::METHOD_CALL,  $2.string));
+                root.addLink(node, root.get($1.index), Empty{});
+                root.addLink(node, root.get($3.index), Empty{});
+                root.addLink(node, root.get($5.index), Empty{});
+                $$.index = node.getIndex();
         }
-        | expr ARROW VARNAME
+        | expr ARROW var_name
         {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::METHOD_CALL,  $2.string));
+		root.addLink(node, root.get($1.index), Empty{});
+		root.addLink(node, root.get($3.index), Empty{});
+		 $$.index = node.getIndex();
         }
-        | expr ARROW VARNAME lost_open_par expr_list_e lost_close_par
+        | expr ARROW var_name lost_open_par expr_list_e lost_close_par
         {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::METHOD_CALL,  $2.string));
+                root.addLink(node, root.get($1.index), Empty{});
+                root.addLink(node, root.get($3.index), Empty{});
+                root.addLink(node, root.get($5.index), Empty{});
+                 $$.index = node.getIndex();
         }
-        | NEW ID
+        | NEW id
         {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::NEW, "NEW"));
+		root.addLink(node, root.get($2.index), Empty{});
+		$$.index = node.getIndex();
         }
-        | NEW ID lost_open_par expr_list_e lost_close_par
+        | NEW id lost_open_par expr_list_e lost_close_par
         {
-		//call function
+		auto node = root.newNode(std::make_shared<Token>(TokenType::NEW, "NEW"));
+                root.addLink(node, root.get($2.index), Empty{});
+                root.addLink(node, root.get($4.index), Empty{});
+                $$.index = node.getIndex();
         }
-        | NEW VARNAME
+        | NEW var_name
         {
-		//create ?
+		auto node = root.newNode(std::make_shared<Token>(TokenType::NEW, "NEW"));
+		root.addLink(node, root.get($2.index), Empty{});
+		$$.index = node.getIndex();
         }
-        | NEW VARNAME lost_open_par expr_list_e lost_close_par
+        | NEW var_name lost_open_par expr_list_e lost_close_par
         {
-		//create ?
+		auto node = root.newNode(std::make_shared<Token>(TokenType::NEW, "NEW"));
+                root.addLink(node, root.get($2.index), Empty{});
+                root.addLink(node, root.get($4.index), Empty{});
+                $$.index = node.getIndex();
         }
         | PARENT DCOL ID lost_open_par expr_list_e lost_close_par
         {
@@ -299,17 +326,22 @@ expr_list_e :  /*empty*/
 	   }
             | expr_list
             {
-
+		$$ = $1;
             }
             ;
 
 expr_list   : expr
 	   {
-
+	   	auto node = root.addNodeInBack(std::make_shared<Token>("expr_list"));
+		root.addLink(node, root.get($1.index), Empty{});
+		$$.index =  node.getIndex();
            }
             | expr_list ',' expr
             {
-
+            	auto node = root.addNodeInBack(std::make_shared<Token>("expr_list"));
+            	root.addLink(node, root.get($1.index), Empty{});
+            	root.addLink(node, root.get($3.index), Empty{});
+            	$$.index =  node.getIndex();
             }
             ;
 
@@ -330,7 +362,7 @@ stmt    : expr_e semicolon
         }
         | while lost_open_par expr lost_close_par stmt
         {
-		$$.index = createNode("main_stmt", {$1, $2, $3, $4, $5});
+		$$.index = createNode("stmt", {$1, $3, $5});
         }
         | do open_breaket stmt_list_e close_breaket while lost_open_par expr lost_close_par semicolon
         {
@@ -374,15 +406,18 @@ stmt    : expr_e semicolon
 
         | echo_kw expr semicolon
         {
-        	$$.index = createNode("main_stmt", {$1, $2});
+        	auto node = root.get($1.index);
+        	root.addLink(node, root.get($2.index), Empty{});
+        	$$.index = $1.index;
         }
         | break semicolon
         {
-        	$$.index = createNode("main_stmt", {$1});
+        	$$ = $1;
         }
         | return expr_e semicolon
         {
-        	$$.index = createNode("main_stmt", {$1, $2});
+        	$$ = $1;
+        	root.addLink(root.get($1.index), root.get($2.index), Empty{});
         }
         | open_breaket stmt_list_e close_breaket
         {
@@ -392,14 +427,11 @@ stmt    : expr_e semicolon
 
 expr_e   :  /*empty*/
 	{
-		auto node = root.addNodeInBack(std::make_shared<Token>("expr_e"));
-		$$.index = node.getIndex();
+
 	}
          | expr
          {
-		auto node = root.addNodeInBack(std::make_shared<Token>("expr_e"));
-		root.addLink(node, root.get($1.index), Empty{});
-		$$.index = node.getIndex();
+		$$ = $1;
          }
          ;
 
@@ -440,11 +472,18 @@ if_stmt : if lost_open_par expr lost_close_par stmt
 
 array_member    : expr SV expr
 		{
-
+			auto node = root.newNode(std::make_shared<Token>("array_member"));
+			auto node_sv = root.newNode(std::make_shared<Token>(TokenType::KeyValueElement, "=>"));
+			root.addLink(node, node_sv, Empty{});
+			root.addLink(node_sv, root.get($1.index), Empty{});
+			root.addLink(node_sv, root.get($3.index), Empty{});
+			$$.index = node.getIndex();
 		}
                 | expr
                 {
-
+                	auto node = root.newNode(std::make_shared<Token>("array_member"));
+                	root.addLink(node, root.get($1.index), Empty{});
+                	$$.index = node.getIndex();
                 }
                 ;
 
@@ -454,48 +493,76 @@ array_members_list_e    : /*empty*/
 			}
                         | array_members_list
                         {
-
+				//auto node = root.newNode(std::make_shared<Token>("array_members_list_e"));
+				//root.addLink(node, root.get($1.index), Empty{});
+				$$.index = $1.index;//node.getIndex();
                         }
                         ;
 
 array_members_list  : array_member
 		    {
-
-
+			auto node = root.newNode(std::make_shared<Token>("array_members_list"));
+			root.addLink(node, root.get($1.index), Empty{});
+			$$.index = node.getIndex();
+			//$$.index = $1.index;
 		    }
                     | array_members_list ',' array_member
                     {
-
+			auto node = root.newNode(std::make_shared<Token>("array_members_list"));
+			root.addLink(node, root.get($1.index), Empty{});
+			root.addLink(node, root.get($3.index), Empty{});
+			$$.index = node.getIndex();
                     }
                     ;
 
 elseif_stmt : ELSEIF lost_open_par expr lost_close_par stmt
 	    {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::ELSEIF, "elseif"));
+		root.addLink(node, root.get($3.index), Empty{});
+		root.addLink(node, root.get($5.index), Empty{});
+		$$.index = node.getIndex();
 	    }
             | elseif_stmt ELSEIF lost_open_par expr lost_close_par stmt
             {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::ELSEIF, "elseif"));
+                root.addLink(root.get($1.index), node, Empty{});
+                root.addLink(node, root.get($4.index), Empty{});
+                root.addLink(node, root.get($6.index), Empty{});
+                $$ = $1;
             }
             ;
 
 switch_stmt : SWITCH lost_open_par expr lost_close_par '{' case_stmt_list '}'
 	    {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::SWITCH, "switch"));
+		root.addLink(node, root.get($3.index), Empty{});
+		root.addLink(node, root.get($6.index), Empty{});
+		$$.index = node.getIndex();
 	    }
             | SWITCH lost_open_par expr lost_close_par '{' case_stmt_list DEFAULT ':' stmt_list_e '}'
 	    {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::SWITCH, "switch"));
+		root.addLink(node, root.get($3.index), Empty{});
+		root.addLink(node, root.get($6.index), Empty{});
+		root.addLink(node, root.get($9.index), Empty{});
+		$$.index = node.getIndex();
 	    }
             ;
 
 case_stmt_list : CASE expr ':' stmt_list_e
 	       {
-
+			auto node = root.newNode(std::make_shared<Token>(TokenType::CASE, "case"));
+			root.addLink(node, root.get($2.index), Empty{});
+			root.addLink(node, root.get($4.index), Empty{});
+			$$.index = node.getIndex();
 	       }
                | case_stmt_list  CASE expr ':' stmt_list_e
                {
-
+			auto node = root.newNode(std::make_shared<Token>(TokenType::CASE, "case"));
+			root.addLink(root.get($1.index), node, Empty{});
+			root.addLink(node, root.get($3.index), Empty{});
+			root.addLink(node, root.get($5.index), Empty{});
+			$$ = $1;
                }
               ;
 
@@ -508,85 +575,126 @@ var_list_e  :  /*empty*/
 	   }
             | var_list
             {
-
+		$$ = $1;
             }
             ;
 
 
-var_list    : VARNAME
+var_list    : var_name
 	    {
-
+		$$ = $1;
 	    }
-	    | VARNAME '=' expr
+	    | var_name '=' expr
 	    {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::DefaultValue, "="));
+		root.addLink(node, root.get($1.index), Empty{});
+		root.addLink(node, root.get($3.index),  Empty{});
+		$$.index = node.getIndex();
 	    }
-            | var_list ',' VARNAME
+            | var_list ',' var_name
 	    {
-
+		auto node = root.newNode(std::make_shared<Token>("var_list"));
+		root.addLink(node, root.get($3.index), Empty{});
+		$$.index = node.getIndex();
 	    }
-            | var_list ',' VARNAME '=' expr
+            | var_list ',' var_name '=' expr
 	    {
-
+		auto node_list = root.newNode(std::make_shared<Token>("var_list"));
+		auto node_default = root.newNode(std::make_shared<Token>(TokenType::DefaultValue, "="));
+		root.addLink(node_list, node_default, Empty{});
+		root.addLink(node_default, root.get($4.index), Empty{});
+		root.addLink(node_default, root.get($5.index), Empty{});
+		$$.index = node_list.getIndex();
 	    }
             ;
 
-function_def : FUNCTION ID lost_open_par var_list_e lost_close_par '{' stmt_list_e '}'
+function_def : FUNCTION id lost_open_par var_list_e lost_close_par '{' stmt_list_e '}'
 	     {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::FUNCTION_DEF, "function"));
+		root.addLink(node, root.get($2.index), Empty{});
+		root.addLink(node, root.get($4.index), Empty{});
+		root.addLink(node, root.get($7.index), Empty{});
+		$$.index = node.getIndex();
 	     }
              ;
 
-class_def : CLASS ID '{' class_body_e '}'
+class_def : CLASS id '{' class_body_e '}'
 	  {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::CLASS_DEF, "class"));
+		root.addLink(node, root.get($2.index), Empty{});
+		root.addLink(node, root.get($4.index), Empty{});
+		$$.index = node.getIndex();
 	  }
-          | CLASS ID EXTENDS ID '{' class_body_e '}'
+          | CLASS id EXTENDS id '{' class_body_e '}'
           {
+		auto node = root.newNode(std::make_shared<Token>(TokenType::CLASS_DEF, "class"));
+		auto extends_node = root.newNode(std::make_shared<Token>(TokenType::CLASS_EXTENDS, "extends"));
+		root.addLink(node, extends_node, Empty{});
+		root.addLink(extends_node, root.get($4.index), Empty{});
 
+		root.addLink(node, root.get($2.index), Empty{});
+		root.addLink(node, root.get($6.index), Empty{});
+		$$.index = node.getIndex();
           }
           ;
 
-class_body_element  : VAR VARNAME ';'
+class_body_element  : VAR var_name ';'
 		    {
-
+			auto node = root.newNode(std::make_shared<Token>(TokenType::ACCESS_MODIFIER, "VAR"));
+			root.addLink(node, root.get($2.index), Empty{});
+			$$.index = node.getIndex();
 		    }
-                    | PUBLIC VARNAME ';'
+                    | PUBLIC var_name ';'
 		    {
-
+			auto node = root.newNode(std::make_shared<Token>(TokenType::ACCESS_MODIFIER, "PUBLIC"));
+			root.addLink(node, root.get($2.index), Empty{});
+			$$.index = node.getIndex();
 		    }
-                    | PRIVATE VARNAME ';'
+                    | PRIVATE var_name ';'
 		    {
-
+			auto node = root.newNode(std::make_shared<Token>(TokenType::ACCESS_MODIFIER, "PRIVATE"));
+			root.addLink(node, root.get($2.index), Empty{});
+			$$.index = node.getIndex();
 		    }
-                    | PROTECTED VARNAME ';'
+                    | PROTECTED var_name ';'
 		    {
-
+			auto node = root.newNode(std::make_shared<Token>(TokenType::ACCESS_MODIFIER, "PROTECTED"));
+			root.addLink(node, root.get($2.index), Empty{});
+			$$.index = node.getIndex();
 		    }
                     | function_def
                     {
-
+			$$ = $1;
                     }
                     | PUBLIC function_def
                     {
-
+			auto node = root.newNode(std::make_shared<Token>(TokenType::ACCESS_MODIFIER, "PUBLIC"));
+			root.addLink(node, root.get($2.index), Empty{});
+			$$.index = node.getIndex();
                     }
                     | PRIVATE function_def
                     {
-
+			auto node = root.newNode(std::make_shared<Token>(TokenType::ACCESS_MODIFIER, "PRIVATE"));
+			root.addLink(node, root.get($2.index), Empty{});
+			$$.index = node.getIndex();
                     }
                     | PROTECTED function_def
                     {
-
+			auto node = root.newNode(std::make_shared<Token>(TokenType::ACCESS_MODIFIER, "PROTECTED"));
+			root.addLink(node, root.get($2.index), Empty{});
+			$$.index = node.getIndex();
                     }
                     ;
 class_body : class_body_element
 	   {
-
+		$$ = $1;
 	   }
            |class_body class_body_element
 	   {
-
+		auto node = root.newNode(std::make_shared<Token>("class_body"));
+		root.addLink(node, root.get($1.index), Empty{});
+		root.addLink(node, root.get($2.index), Empty{});
+		$$.index = node.getIndex();
 	   }
            ;
 
@@ -596,9 +704,10 @@ class_body_e : /*empty*/
              }
              |class_body
              {
-
+		$$ = $1;
              }
              ;
+
 
 
 var_name : VARNAME
@@ -607,7 +716,11 @@ var_name : VARNAME
 		$$.index = node.getIndex();
 	 }
 	 ;
-
+id: ID
+  {
+  	auto node = root.addNodeInBack(std::make_shared<Token>(TokenType::ID, $1.string));
+  	$$.index = node.getIndex();
+  }
 
 
 

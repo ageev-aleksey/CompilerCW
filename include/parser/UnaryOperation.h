@@ -12,6 +12,7 @@ class UnaryOperation : public Token {
 public:
     enum class Type {
         LOGICAL,
+        MATH,
         UNKNOWN
     };
     UnaryOperation(std::string symbol, Type type);

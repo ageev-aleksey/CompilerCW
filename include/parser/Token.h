@@ -26,6 +26,20 @@ public:
         RETURN,
         CHARCONST,
         INTCONST,
+        ARRAY_INDEX,
+        CREATE_ARRAY,
+        FUNC_CALL,
+        ID,
+        METHOD_CALL,
+        NEW,
+        KeyValueElement,
+        SWITCH,
+        CASE,
+        FUNCTION_DEF,
+        CLASS_DEF,
+        CLASS_EXTENDS,
+        ACCESS_MODIFIER,
+        DefaultValue,
 
     };
 

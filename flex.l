@@ -25,66 +25,210 @@ WORD {LETTER}({LETTER}|{DIGIT})*
     yylval.string = yytext;
     return ECHO_KW;
 }
+
 <PHP>"break" 				{
     yylval.string = yytext;
     return BREAK;
-    }
+}
+
 <PHP>"while" 				{
     yylval.string = yytext;
     return WHILE;
 }
+
 <PHP>"do"					{
     yylval.string = yytext;
     return DO;
 }
+
 <PHP>"for"					{
     yylval.string = yytext;
-return FOR;}
-<PHP>"foreach"				{return FOREACH;}
-<PHP>"as"					{return AS;}
-<PHP>"if"					{return IF;}
-<PHP>"else"					{return ELSE;}
-<PHP>"elseif"				{return ELSEIF;}
-<PHP>"switch"				{return	SWITCH;}
-<PHP>"case"					{return CASE;}
-<PHP>"default"				{return DEFAULT;}
-<PHP>"function" 			{return FUNCTION;}
-<PHP>"class"				{return CLASS;}
-<PHP>"public"				{return PUBLIC;}
-<PHP>"private"				{return PRIVATE;}
-<PHP>"protected"			{return PROTECTED;}
-<PHP>"extends"				{return EXTENDS;}
-<PHP>"return"               {return RETURN;}
-<PHP>":"					{return ':';}
-<PHP>";"					{return ';';}
-<PHP>"("					{return '(';}
-<PHP>")"					{return ')';}
-<PHP>"{"					{return '{';}
-<PHP>"}"					{return '}';}
-<PHP>">"                    {return '>';}
-<PHP>"<"                    {return '<';}
-<PHP>"="                    {return '=';}
-<PHP>"==" 					{return EQ;}
-<PHP>"!="					{return NE;}
-<PHP>">="					{return GEQ;}
-<PHP>"<="					{return LEQ;}
-<PHP>"&&" 					{return AND;}
-<PHP>"||" 					{return OR;}
-<PHP>"!"					{return '!';}
-<PHP>"-"					{return '-';}
-<PHP>"+" 					{return '+';}
-<PHP>"*" 					{return '*';}
-<PHP>"/" 					{return '/';}
-<PHP>"array" 				{return ARRAY;}
-<PHP>"new" 				    {return NEW;}
-<PHP>"=>"					{return SV;}
+    return FOR;
+}
+
+<PHP>"foreach"				{
+    yylval.string = yytext;
+    return FOREACH;
+}
+
+<PHP>"as"					{
+    yylval.string = yytext;
+    return AS;
+}
+
+<PHP>"if"					{
+    yylval.string = yytext;
+    return IF;
+}
+
+<PHP>"else"					{
+    yylval.string = yytext;
+    return ELSE;
+}
+
+<PHP>"elseif"				{
+    yylval.string = yytext;
+    return ELSEIF;
+}
+
+<PHP>"switch"				{
+    yylval.string = yytext;
+    return	SWITCH;
+}
+<PHP>"case"					{
+    yylval.string = yytext;
+    return CASE;
+}
+<PHP>"default"				{
+    yylval.string = yytext;
+    return DEFAULT;
+}
+<PHP>"function" 			{
+    yylval.string = yytext;
+    return FUNCTION;
+}
+<PHP>"class"				{
+    yylval.string = yytext;
+    return CLASS;
+}
+<PHP>"public"				{
+    yylval.string = yytext;
+    return PUBLIC;
+}
+<PHP>"private"				{
+    yylval.string = yytext;
+    return PRIVATE;
+}
+<PHP>"protected"			{
+    yylval.string = yytext;
+    return PROTECTED;
+}
+<PHP>"extends"				{
+    yylval.string = yytext;
+    return EXTENDS;
+}
+<PHP>"return"               {
+    yylval.string = yytext;
+    return RETURN;
+}
+<PHP>":"					{
+    yylval.string = yytext;
+    return ':';
+}
+<PHP>";"					{
+    yylval.string = yytext;
+    return ';';
+}
+<PHP>"("					{
+    yylval.string = yytext;
+    return '(';
+}
+<PHP>")"					{
+    yylval.string = yytext;
+    return ')';
+}
+<PHP>"{"					{
+    yylval.string = yytext;
+    return '{';
+}
+<PHP>"}"					{
+    yylval.string = yytext;
+    return '}';
+}
+<PHP>">"                    {
+    yylval.string = yytext;
+    return '>';
+}
+<PHP>"<"                    {
+    yylval.string = yytext;
+    return '<';
+}
+<PHP>"="                    {
+    yylval.string = yytext;
+    return '=';
+}
+<PHP>"==" 					{
+    yylval.string = yytext;
+    return EQ;
+}
+<PHP>"!="					{
+    yylval.string = yytext;
+    return NE;
+}
+<PHP>">="					{
+    yylval.string = yytext;
+    return GEQ;
+}
+<PHP>"<="					{
+    yylval.string = yytext;
+    return LEQ;
+}
+<PHP>"&&" 					{
+    yylval.string = yytext;
+    return AND;
+}
+<PHP>"||" 					{
+    yylval.string = yytext;
+    return OR;
+}
+<PHP>"!"					{
+    yylval.string = yytext;
+    return '!';
+}
+<PHP>"-"					{
+    yylval.string = yytext;
+    return '-';
+}
+<PHP>"+" 					{
+    yylval.string = yytext;
+    return '+';
+}
+<PHP>"*" 					{
+    yylval.string = yytext;
+    return '*';
+}
+<PHP>"/" 					{
+    yylval.string = yytext;
+    return '/';
+}
+<PHP>"array" 				{
+    yylval.string = yytext;
+    return ARRAY;
+}
+<PHP>"new" 				    {
+    yylval.string = yytext;
+    return NEW;
+}
+<PHP>"=>"					{
+    yylval.string = yytext;
+    return SV;
+}
+
+<PHP>"->"					{
+    yylval.string = yytext;
+    return ARROW;
+}
+
 <PHP>\${WORD}           	{
     yylval.string = yytext;
-return VARNAME;}
-<PHP>{WORD}                 {return ID;}
-<PHP>{DIGIT}+               {return INTCONST;}
-<PHP>","                    {return ',';}
-<PHP>"."                    {return '.';}
+    return VARNAME;
+    }
+<PHP>{WORD}                 {
+    yylval.string = yytext;
+    return ID;
+}
+<PHP>{DIGIT}+               {
+    yylval.string = yytext;
+    return INTCONST;
+}
+<PHP>","                    {
+    yylval.string = yytext;
+    return ',';
+}
+<PHP>"."                    {
+    yylval.string = yytext;
+    return '.';
+}
 <PHP>"\""   {
     BEGIN(QUOTE);
 }
@@ -102,6 +246,7 @@ return VARNAME;}
 }
 
 <QUOTE>[^'"]* {
+    yylval.string = yytext;
     return CHARCONST;
 }
 
@@ -111,15 +256,3 @@ return VARNAME;}
 
 
 %%
-
-    /*<DOUBLE_QUOTE>\$({WORD})|(\{{WORD}\}) {
-    printf("ID in str: %s\n", yytext);
-  }
-
-<SINGLE_QUOTE>[^']+ {
-    printf("Quote: %s\n", yytext);
-}
-
-<DOUBLE_QUOTE>[^"${}]+ {
-    printf("Quote: %s\n", yytext);
-}*/
