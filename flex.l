@@ -13,7 +13,7 @@ WORD {LETTER}({LETTER}|{DIGIT})*
 %%
 
 "<?php"                      {BEGIN(PHP);}
-<PHP>"?>"                         {BEGIN(INITIAL);}
+<PHP>"?>"                    {BEGIN(INITIAL);}
 
 
 <PHP>"/*"                    {BEGIN(C_COMMENT);}
@@ -134,6 +134,14 @@ WORD {LETTER}({LETTER}|{DIGIT})*
 <PHP>"}"					{
     yylval.string = yytext;
     return '}';
+}
+<PHP>"["					{
+    yylval.string = yytext;
+    return '[';
+}
+<PHP>"]"					{
+    yylval.string = yytext;
+    return ']';
 }
 <PHP>">"                    {
     yylval.string = yytext;

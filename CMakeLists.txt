@@ -28,7 +28,7 @@ ADD_CUSTOM_COMMAND(
 )
 
 
-add_executable(parser ${SRC}  ${SRC_parser} ${FLEX_OUTPUT}  ${BISON_OUTPUT})
+add_executable(parser ${SRC}  ${SRC_parser} ${FLEX_OUTPUT} ${BISON_OUTPUT})
 target_include_directories(parser PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include ${CMAKE_CURRENT_LIST_DIR}/parser)
 target_link_libraries(parser fl)
 

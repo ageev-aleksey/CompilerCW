@@ -1,7 +1,7 @@
-//
-// Created by nrx on 29.05.2020.
-//
-
+//////
+////// Created by nrx on 29.05.2020.
+//////
+////
 #include <iostream>
 #include <string>
 #include <vector>
@@ -100,12 +100,11 @@ int main() {
 
 
 
-
-
-
+//
+//
+//
 //#include <iostream>
 //#include "bison.h"
-//
 //extern "C" int yywrap();
 //extern "C" int yylex();
 //extern "C" char* yytext;
@@ -115,10 +114,11 @@ int main() {
 //    do{
 //        token = yylex();
 //        std::cout << "token id: " << token << std::endl;
-//        std::cout << "token val: " << yytext << std::endl << std::endl;
+//        std::cout << "token val: " << yylval.string << std::endl << std::endl;
 //    }while(token != 0);
 //}
 //
+//token_type yylval;
 //
 //int main(int argc, char** argv) {
 //    std::cout << "Compiler!" << std::endl;
@@ -126,8 +126,8 @@ int main() {
 //    loop();
 //    return 0;
 //}
-
-
-
+//
+//
+//
 
 
