@@ -40,6 +40,7 @@ public:
         CLASS_EXTENDS,
         ACCESS_MODIFIER,
         DefaultValue,
+        EMPTY,
 
     };
 
@@ -55,6 +56,7 @@ public:
 
     Token(std::string token_value);
     Token(TokenType::ENUM type, const std::string &token_value);
+    bool operator==(const Token& tok) const;
     TokenType::ENUM getType() const;
     virtual std::string str() const;
 
@@ -69,6 +71,14 @@ private:
 
 std::ostream& operator<<(std::ostream &stream, const Token &token);
 
-
+namespace std {
+    template<>
+    struct hash <Token> {
+        size_t operator()(const Token& a) const{
+            hash<std::string> hs;
+            return hs(a.str());
+        }
+    };
+}
 
 #endif //DUMMY_PARSER_TOKENINFO_H

@@ -9,6 +9,7 @@
 #include "GraphToDOT.h"
 #include "Tokens.h"
 #include <memory>
+#include <unordered_set>
 #include "help_functions.h"
 #define YYDEBUG 1
 extern "C" int yylen();
@@ -43,6 +44,17 @@ int create_op_node(std::string value, std::string op, token_type v1, token_type 
 
 }*/
 
+std::pair<std::unordered_set<Token>,std::unordered_set<Token>> createTableOfConstants() {
+    std::pair<std::unordered_set<Token>,std::unordered_set<Token>> res;
+    for(Graph<std::shared_ptr<Token>, Empty>::iterator itr = root.begin(); itr != root.end(); ++itr) {
+        if(itr.getData()->getType() == TokenType::CHARCONST) {
+            res.first.insert(*itr.getData());
+        } else if(itr.getData()->getType() == TokenType::INTCONST) {
+            res.second.insert(*itr.getData());
+        }
+    }
+    return res;
+}
 
 int createNode(std::string value, std::vector<token_type> children_index) {
     auto node = root.addNodeInBack(std::make_shared<Token>(value));
@@ -77,6 +89,17 @@ int main() {
     yyparse();
     std::cout << "end!" << std::endl;
     saveImageGV(toDotByDepthStep(root), "graph");
+    auto table = createTableOfConstants();
+    std::cout << "--===CharConstants===--\n";
+    for(auto t : table.first) {
+        std::cout << t << "\n";
+    }
+    std::cout << std::flush;
+    std::cout << "--===IntConstants===--\n";
+    for(auto t : table.second) {
+        std::cout << t << "\n";
+    }
+    std::cout << std::flush;
     return 0;
 }
 

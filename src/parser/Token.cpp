@@ -13,6 +13,11 @@ Token::Token(TokenType::ENUM type,const std::string &token_value) {
     construct(type, token_value);
 }
 
+bool Token::operator==(const Token& tok) const {
+    return (tok.getType() == tok.getType()) && (tok.str() == tok.str());
+}
+
+
 void Token::construct(TokenType::ENUM type,const std::string &token_value) {
     this->type = type;
     this->token_name = token_value;
@@ -65,6 +70,7 @@ std::string TokenType::str(TokenType::ENUM type) {
             {TokenType::CLASS_EXTENDS, "CLASS_EXTENDS"},
             {TokenType::ACCESS_MODIFIER, "ACCESS_MODIFIER"},
             {TokenType::DefaultValue, "DefaultValue"},
+            {TokenType::EMPTY, "EMPTY"},
     };
     std::unordered_map<TokenType::ENUM, std::string>::iterator itr = map.find(type);
 

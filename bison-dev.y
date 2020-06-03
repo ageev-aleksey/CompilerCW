@@ -6,6 +6,7 @@
         #define YYDEBUG 1
         #define YYSTYPE struct token_type
         extern Graph<std::shared_ptr<Token>, Empty> root;
+        #include <iostream>
 %}
 
 %token  NON_TERM BREAK CLONE ENDSWITCH HTML WHILE DO FOR FOREACH VARNAME AS SV RETURN INTCONST CHARCONST PAS DIVAS MODAS EQ NE TEQ TNE LEQ GEQ AND OR PP MM UPLUS UMINUS ARRAY ID ARROW NEW PARENT DCOL IF ELSE ELSEIF SWITCH DEFAULT CASE FUNCTION CLASS EXTENDS VAR PUBLIC PRIVATE PROTECTED ECHO_KW MAS MULAS UNDEFINED
@@ -81,7 +82,8 @@ stmt_list   : stmt
 
 stmt_list_e :  /*empty*/
             {
-            	$$.index = createNode("stmt_list_e", {});
+            	auto node = root.newNode(std::make_shared<Token>(TokenType::EMPTY, "stmt_list_e"));
+            	$$.index = node.getIndex();
             }
             | stmt_list
             {
@@ -322,7 +324,8 @@ expr    : var_name
 
 expr_list_e :  /*empty*/
 	   {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::EMPTY, "expr_list_e"));
+		$$.index = node.getIndex();
 	   }
             | expr_list
             {
@@ -427,7 +430,8 @@ stmt    : expr_e semicolon
 
 expr_e   :  /*empty*/
 	{
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::EMPTY, "expr_e"));
+		$$.index = node.getIndex();
 	}
          | expr
          {
@@ -489,7 +493,8 @@ array_member    : expr SV expr
 
 array_members_list_e    : /*empty*/
 			{
-
+				auto node = root.newNode(std::make_shared<Token>(TokenType::EMPTY, "array_members_list_e"));
+				$$.index = node.getIndex();
 			}
                         | array_members_list
                         {
@@ -571,7 +576,8 @@ case_stmt_list : CASE expr ':' stmt_list_e
 
 var_list_e  :  /*empty*/
 	   {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::EMPTY, "var_list_e"));
+		$$.index = node.getIndex();
 	   }
             | var_list
             {
@@ -700,7 +706,8 @@ class_body : class_body_element
 
 class_body_e : /*empty*/
              {
-
+		auto node = root.newNode(std::make_shared<Token>(TokenType::EMPTY, "class_body_e"));
+		$$.index = node.getIndex();
              }
              |class_body
              {

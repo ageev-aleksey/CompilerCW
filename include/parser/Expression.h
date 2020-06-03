@@ -1,7 +1,0 @@
-//
-// Created by nrx on 29.05.2020.
-//
-
-#ifndef DUMMY_PARSER_EXPRESSION_H
-#define DUMMY_PARSER_EXPRESSION_H
-#endif //DUMMY_PARSER_EXPRESSION_H
